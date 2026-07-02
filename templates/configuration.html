@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}الإعدادات{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="page-intro">
+        <h2 data-i18n="cfg_title">الإعدادات</h2>
+        <p data-i18n="cfg_intro">إعداد مكاتب الاقتراع والأحزاب والمراقبين قبل يوم الانتخاب</p>
+    </section>
+
+    <section class="card config-card">
+        <div class="card-title" data-i18n="cfg_bureaux">مكاتب الاقتراع</div>
+        <div class="config-body">
+            <div class="config-add-row config-add-grid">
+                <input type="text" id="bureau-name" data-i18n-placeholder="ph_bureau_name" placeholder="اسم المكتب" class="config-input">
+                <input type="text" id="bureau-ville" data-i18n-placeholder="ph_ville" placeholder="المدينة" class="config-input">
+                <select id="bureau-region" class="config-input"></select>
+                <input type="text" id="bureau-code" data-i18n-placeholder="ph_code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
+                <input type="text" id="bureau-centre" data-i18n-placeholder="ph_centre" placeholder="المركز" class="config-input">
+                <input type="text" id="bureau-adresse" data-i18n-placeholder="ph_adresse" placeholder="العنوان" class="config-input">
+                <input type="number" id="bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
+                <input type="number" id="bureau-capacite" data-i18n-placeholder="ph_capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
+                <select id="bureau-status" class="config-input"></select>
+                <button type="button" id="btn-add-bureau" class="btn-primary" data-i18n="cfg_add_bureau">إضافة مكتب</button>
+            </div>
+            <ul id="bureau-list" class="config-list"></ul>
+        </div>
+    </section>
+
+    <section class="card config-card">
+        <div class="card-title" data-i18n="cfg_partis">الأحزاب السياسية</div>
+        <div class="config-body">
+            <div class="config-add-row">
+                <input type="text" id="parti-name" data-i18n-placeholder="ph_parti" placeholder="اسم الحزب" class="config-input">
+                <button type="button" id="btn-add-parti" class="btn-primary" data-i18n="cfg_add_parti">إضافة حزب</button>
+            </div>
+            <ul id="parti-list" class="config-list"></ul>
+        </div>
+    </section>
+
+    <section class="card config-card">
+        <div class="card-title" data-i18n="cfg_mourakibs">المراقبون (حسب الحزب)</div>
+        <div class="config-body">
+            <div class="config-add-row">
+                <select id="mourakib-parti" class="config-input"></select>
+                <input type="text" id="mourakib-name" data-i18n-placeholder="ph_mourakib" placeholder="اسم المراقب" class="config-input">
+                <button type="button" id="btn-add-mourakib" class="btn-primary" data-i18n="cfg_add_mourakib">إضافة مراقب</button>
+            </div>
+            <div id="mourakib-groups" class="mourakib-groups"></div>
+        </div>
+    </section>
+
+    <div class="config-actions">
+        <button type="button" id="btn-save-config" class="btn-primary" data-i18n="cfg_save">حفظ الإعدادات</button>
+        <button type="button" id="btn-sync-server" class="btn-secondary" data-i18n="cfg_sync">مزامنة مع الخادم</button>
+        <button type="button" id="btn-load-demo" class="btn-secondary" data-i18n="cfg_demo">تحميل بيانات تجريبية</button>
+        <button type="button" id="btn-export-backup" class="btn-secondary" data-i18n="cfg_backup">تنزيل نسخة احتياطية</button>
+        <label class="btn-secondary btn-file-label">
+            <span data-i18n="cfg_restore">استعادة نسخة احتياطية</span>
+            <input type="file" id="btn-import-backup" accept="application/json,.json" class="hidden-file-input">
+        </label>
+        <button type="button" id="btn-clear-all" class="btn-link btn-link-danger" data-i18n="cfg_clear">مسح الكل</button>
+        <span id="config-status" class="status-msg"></span>
+    </div>
+</div>
+
+<div id="modal-rename-parti" class="modal hidden">
+    <div class="modal-box">
+        <h3 data-i18n="cfg_edit_parti">تعديل الحزب</h3>
+        <input type="hidden" id="rename-parti-id">
+        <div class="modal-field">
+            <label data-i18n="lbl_name">الاسم</label>
+            <input type="text" id="rename-parti-name" class="config-input" data-i18n-placeholder="ph_parti" placeholder="اسم الحزب">
+        </div>
+        <div class="modal-field modal-field-color">
+            <label data-i18n="lbl_color">اللون</label>
+            <input type="color" id="rename-parti-color" class="config-input-color" value="#1565c0">
+        </div>
+        <div class="modal-actions">
+            <button type="button" id="btn-save-rename" class="btn-primary" data-i18n="btn_save">حفظ</button>
+            <button type="button" id="btn-cancel-rename" class="btn-secondary" data-i18n="btn_cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+<div id="modal-edit-bureau" class="modal hidden">
+    <div class="modal-box modal-box-wide">
+        <h3 data-i18n="cfg_edit_bureau">تعديل المكتب</h3>
+        <input type="hidden" id="edit-bureau-id">
+        <div class="config-add-grid modal-edit-grid">
+            <input type="text" id="edit-bureau-name" data-i18n-placeholder="ph_bureau_name" placeholder="اسم المكتب" class="config-input">
+            <input type="text" id="edit-bureau-ville" data-i18n-placeholder="ph_ville" placeholder="المدينة" class="config-input">
+            <select id="edit-bureau-region" class="config-input"></select>
+            <input type="text" id="edit-bureau-code" data-i18n-placeholder="ph_code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
+            <input type="text" id="edit-bureau-centre" data-i18n-placeholder="ph_centre" placeholder="المركز" class="config-input">
+            <input type="text" id="edit-bureau-adresse" data-i18n-placeholder="ph_adresse" placeholder="العنوان" class="config-input">
+            <input type="number" id="edit-bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
+            <input type="number" id="edit-bureau-capacite" data-i18n-placeholder="ph_capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
+            <select id="edit-bureau-status" class="config-input"></select>
+        </div>
+        <div class="modal-actions">
+            <button type="button" id="btn-save-bureau-edit" class="btn-primary" data-i18n="btn_save">حفظ</button>
+            <button type="button" id="btn-cancel-bureau-edit" class="btn-secondary" data-i18n="btn_cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='store.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='config.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

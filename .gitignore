@@ -1,0 +1,8 @@
+.env
+__pycache__/
+**/__pycache__/
+*.pyc
+output/
+.pytest_cache/
+data/kasoft.db
+data/geo_disk/

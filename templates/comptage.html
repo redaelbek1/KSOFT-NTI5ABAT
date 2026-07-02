@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}عدّ الأصوات{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="page-intro">
+        <h2 data-i18n="cpt_title">عدّ الأصوات</h2>
+        <p data-i18n="cpt_intro">تسجيل الأصوات لحظة بلحظة عبر المراقبين في مكاتب الاقتراع</p>
+    </section>
+
+    <div id="comptage-empty" class="card coming-soon-card hidden">
+        <p class="coming-soon-icon">📋</p>
+        <h2 data-i18n="cpt_setup_title">الإعداد مطلوب</h2>
+        <p data-i18n="cpt_setup_intro">لبدء عدّ الأصوات، أكمل الخطوات التالية:</p>
+        <ol class="setup-steps">
+            <li>أضف <strong>مكتب اقتراع</strong> (الإعدادات)</li>
+            <li>أضف <strong>حزباً</strong> و<strong>مراقباً</strong> على الأقل</li>
+            <li>عد هنا واختر المكتب وسجّل الأصوات</li>
+        </ol>
+        <a href="{{ url_for('configuration') }}" class="btn-primary" data-i18n="cpt_go_config">الذهاب إلى الإعدادات</a>
+    </div>
+
+    <div id="comptage-app" class="hidden">
+        <div id="close-suggestion" class="alert-banner alert-banner-info hidden" data-i18n-html="cpt_close_hint">
+            انتهى العد؟ غيّر الحالة إلى <strong>مغلق</strong> ثم صدّر المحضر.
+        </div>
+        <div id="comptage-locked-banner" class="alert-banner hidden" data-i18n="cpt_locked">
+            المكتب مغلق — العرض فقط. يمكن تصدير المحضر.
+        </div>
+        <div id="pv-warning" class="pv-warning hidden"></div>
+        <section class="totals-banner">
+            <div class="totals-main">
+                <span class="totals-label" data-i18n="cpt_total">مجموع الأصوات</span>
+                <span class="totals-value num" id="total-votes" lang="en-US" dir="ltr">0</span>
+            </div>
+            <div class="totals-main totals-participation">
+                <span class="totals-label" data-i18n="cpt_participation">نسبة المشاركة</span>
+                <span class="totals-value num" id="participation-pct" lang="en-US" dir="ltr">0%</span>
+                <span class="totals-sub" id="participation-detail">0 / 0 مسجل</span>
+                <span class="totals-sub" id="pv-detail">صحيحة: 0 | بيضاء: 0 | ملغاة: 0</span>
+            </div>
+            <div class="totals-breakdown" id="totals-breakdown"></div>
+        </section>
+
+        <section class="card filter-card">
+            <div class="card-title" data-i18n="cpt_bureau_card">مكتب الاقتراع</div>
+            <div class="comptage-toolbar">
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_bureau">المكتب</span>
+                    <select id="comptage-bureau"></select>
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_status">الحالة</span>
+                    <select id="comptage-status" class="config-input"></select>
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_actif">المراقب النشط (مسؤول الإدخال)</span>
+                    <input type="text" id="mourakib-actif" class="config-input" data-i18n-placeholder="cpt_actif_ph" placeholder="الاسم الكامل للمراقب">
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_blancs">الأوراق البيضاء</span>
+                    <input type="number" id="pv-blancs" class="config-input num" lang="en-US" min="0" value="0">
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_nuls">الأصوات الملغاة</span>
+                    <input type="number" id="pv-nuls" class="config-input num" lang="en-US" min="0" value="0">
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_votants">عدد المصوتين (اختياري)</span>
+                    <input type="number" id="pv-votants" class="config-input num" lang="en-US" min="0" data-i18n-placeholder="cpt_votants_ph" placeholder="يُحسب تلقائياً إن تُرك فارغاً">
+                </div>
+                <div class="filter-field">
+                    <span class="label" data-i18n="cpt_pv_num">رقم المحضر</span>
+                    <input type="text" id="pv-numero" class="config-input num" lang="en-US" dir="ltr" readonly>
+                </div>
+                <div class="comptage-toolbar-actions">
+                    <button type="button" id="btn-export-pv" class="btn-secondary" data-i18n="cpt_export_pv_txt">تصدير محضر TXT</button>
+                    <button type="button" id="btn-export-pv-pdf" class="btn-secondary" data-i18n="cpt_export_pv_pdf">تصدير محضر PDF</button>
+                    <button type="button" id="btn-export-regional" class="btn-primary" data-i18n="cpt_report_txt">تقرير TXT</button>
+                    <button type="button" id="btn-export-regional-csv" class="btn-secondary" data-i18n="cpt_report_csv">تقرير CSV</button>
+                    <button type="button" id="btn-export-regional-pdf" class="btn-secondary" data-i18n="cpt_report_pdf">تقرير PDF</button>
+                    <button type="button" id="btn-export-journal" class="btn-secondary" data-i18n="cpt_export_journal">تصدير السجل</button>
+                    <button type="button" id="btn-export-all-pv-zip" class="btn-secondary" data-i18n="cpt_export_zip">كل المحاضر ZIP</button>
+                    <button type="button" id="btn-reset-bureau-votes" class="btn-link btn-link-danger" data-i18n="cpt_reset">إعادة تعيين الأصوات</button>
+                    <a href="{{ url_for('configuration') }}" class="btn-link" data-i18n="cpt_edit_config">تعديل الإعدادات</a>
+                </div>
+                <p id="keyboard-hint" class="hint comptage-kbd-hint" data-i18n="cpt_kbd_hint">اختصار: انقر + أو − ثم استخدم مفاتيح + و − على لوحة المفاتيح</p>
+            </div>
+        </section>
+
+        <section class="parti-grid" id="parti-grid"></section>
+
+        <section class="card">
+            <div class="card-title" data-i18n="cpt_journal">سجل العمليات (آخر 50 إجراء)</div>
+            <div class="journal-wrap">
+                <table class="journal-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="th_time">الوقت</th>
+                            <th data-i18n="th_actif">المراقب النشط</th>
+                            <th data-i18n="th_parti">الحزب</th>
+                            <th data-i18n="th_mourakib">المراقب</th>
+                            <th data-i18n="th_action">الإجراء</th>
+                            <th data-i18n="th_total">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="journal-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='store.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='comptage.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

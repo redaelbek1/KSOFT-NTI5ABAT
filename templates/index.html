@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}استخراج النتائج الرسمية{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="page-intro">
+        <h2>استخراج النتائج الرسمية</h2>
+        <p>نفس تصفية الموقع الرسمي للانتخابات — معاينة وتحميل ملف CSV عربي منظم</p>
+        {% if not kasoft_authenticated %}
+        <p class="hint export-public-hint">هذه الصفحة متاحة بدون دخول. لعدّ الأصوات وإدارة المكاتب، <a href="{{ url_for('login', next=url_for('dashboard')) }}">سجّل الدخول إلى كاسوفت</a>.</p>
+        {% endif %}
+    </section>
+
+    <section class="card filter-card">
+        <div class="card-title">تصفية النتائج</div>
+
+        <div class="filter-row">
+            <div class="filter-field">
+                <span class="label">الانتخابات</span>
+                <select id="election-type">
+                    <option value="legislative">التشريعية</option>
+                    <option value="communal">الجماعية</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <span class="label">السنة</span>
+                    <select id="election-year" class="num" lang="en-US"></select>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <div class="filter-field">
+                <span class="label">الجهة</span>
+                <select id="filter-region">
+                    <option value="0" class="leg-only">المستوى الوطني</option>
+                    {% for r in regions %}
+                    <option value="{{ r.id }}">{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-field">
+                <span class="label">عمالة أو إقليم</span>
+                <select id="filter-province" disabled>
+                    <option value="0">اختر العمالة أو الإقليم</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-row" id="commune-row">
+            <div class="filter-field hidden" id="commune-wrap">
+                <span class="label">جماعة أو مقاطعة</span>
+                <select id="filter-commune" disabled>
+                    <option value="0">اختر الجماعة</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <span class="label" id="circ-label">الدائرة الانتخابية البرلمانية</span>
+                <select id="filter-circ">
+                    <option value="0">جميع الدوائر</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="search-row">
+            <button id="btn-preview" class="btn-primary" type="button">معاينة النتائج</button>
+            <button id="btn-search" class="btn-secondary" type="button">تحميل CSV</button>
+            <span id="status-msg" class="status-msg"></span>
+        </div>
+    </section>
+
+    <section class="card bulk-card">
+        <div class="card-title">تصدير كل البيانات</div>
+        {% if kasoft_authenticated %}
+        <p class="hint">تحميل جميع الجهات والعمالات والجماعات والدوائر — ملفات CSV داخل أرشيف ZIP</p>
+        <div class="bulk-actions">
+            <button class="btn-export-type" type="button" data-types="legislative">
+                الانتخابات التشريعية
+                <span class="bulk-sub num" lang="en-US" dir="ltr">2021 + 2016 — كل الدوائر</span>
+            </button>
+            <button class="btn-export-type" type="button" data-types="communal">
+                الانتخابات الجماعية
+                <span class="bulk-sub num" lang="en-US" dir="ltr">2021 + 2015 — كل الجماعات</span>
+            </button>
+            <button class="btn-export-type btn-export-both" type="button" data-types="legislative,communal">
+                الكل معاً
+                <span class="bulk-sub">تشريعية + جماعية</span>
+            </button>
+        </div>
+        <div id="bulk-progress" class="bulk-progress hidden">
+            <div class="progress-bar"><div class="progress-fill" id="bulk-fill"></div></div>
+            <p id="bulk-msg" class="status-msg">—</p>
+            <a id="bulk-download" class="bulk-download hidden" href="/api/export-all/download">تحميل الملف</a>
+        </div>
+        {% else %}
+        <p class="hint export-public-hint">التصدير الكامل للبيانات يتطلب تسجيل الدخول — <a href="{{ url_for('login', next=url_for('export_results')) }}">دخول كاسوفت</a>. المعاينة وتحميل CSV لدائرة واحدة متاحان بدون دخول.</p>
+        {% endif %}
+    </section>
+
+    <section class="card info-card">
+        <div class="card-title card-title-light">توزيع الأصوات المعبر عنها</div>
+        <div class="table-wrap">
+            <table class="preview-table" id="preview-leg">
+                <thead>
+                    <tr>
+                        <th>الهيئة السياسية</th>
+                        <th>وكيل اللائحة أو المرشح</th>
+                        <th>عدد الأصوات المحصل عليها</th>
+                        <th>عدد المقاعد</th>
+                    </tr>
+                </thead>
+                <tbody id="preview-leg-body"></tbody>
+            </table>
+            <table class="preview-table hidden" id="preview-com">
+                <thead>
+                    <tr>
+                        <th>الهيئة السياسية</th>
+                        <th>إسم وكيل اللائحة أو المرشح</th>
+                        <th>عدد الأصوات المحصل عليها</th>
+                    </tr>
+                </thead>
+                <tbody id="preview-com-body"></tbody>
+            </table>
+        </div>
+        <p id="preview-empty" class="hint preview-empty">اختر التصفية ثم اضغط «معاينة النتائج» لعرض الجدول هنا.</p>
+        <p class="hint">نفس الجدول المعروض على الموقع الرسمي — ملف CSV جاهز لبرنامج Excel.</p>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='app.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

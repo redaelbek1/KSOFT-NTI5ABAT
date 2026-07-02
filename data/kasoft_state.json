@@ -1,0 +1,235 @@
+{
+  "bureaux": [
+    {
+      "id": "demo-b1",
+      "name": "مكتب الاقتراع 1 — الرباط",
+      "inscrits": 450,
+      "capacite": 500,
+      "ville": "الرباط",
+      "region": "الرباط -سلا -القنيطرة",
+      "status": "ouvert",
+      "code": "RB-001",
+      "centre": "ثانوية الحسن الثاني",
+      "adresse": "حي أكدال — شارع محمد الخامس"
+    },
+    {
+      "id": "demo-b2",
+      "name": "مكتب الاقتراع 2 — الدار البيضاء",
+      "inscrits": 380,
+      "capacite": 400,
+      "ville": "الدار البيضاء",
+      "region": "الدار البيضاء-سطات",
+      "status": "attente",
+      "code": "CA-014",
+      "centre": "إعدادية ابن رشد",
+      "adresse": "المعاريف — زنقة 12"
+    }
+  ],
+  "partis": [
+    {
+      "color": "#5b7c99",
+      "id": "demo-p1",
+      "name": "حزب الأصالة والمعاصرة"
+    },
+    {
+      "color": "#c62828",
+      "id": "demo-p2",
+      "name": "حزب الاستقلال"
+    },
+    {
+      "color": "#2e7d32",
+      "id": "demo-p3",
+      "name": "حزب التجمع الوطني للأحرار"
+    }
+  ],
+  "mourakibs": {
+    "demo-p1": [
+      {
+        "id": "demo-m1",
+        "name": "محمد العلوي"
+      },
+      {
+        "id": "demo-m2",
+        "name": "سارة بنعلي"
+      }
+    ],
+    "demo-p2": [
+      {
+        "id": "demo-m3",
+        "name": "فاطمة الزهراء"
+      }
+    ],
+    "demo-p3": [
+      {
+        "id": "demo-m4",
+        "name": "أحمد الإدريسي"
+      }
+    ]
+  },
+  "votes": {
+    "demo-b1": {
+      "demo-p1": {
+        "demo-m1": 46,
+        "demo-m2": 12
+      },
+      "demo-p2": {
+        "demo-m3": 34
+      },
+      "demo-p3": {
+        "demo-m4": 15
+      }
+    },
+    "demo-b2": {
+      "demo-p1": {
+        "demo-m1": 20
+      },
+      "demo-p2": {
+        "demo-m3": 35
+      }
+    }
+  },
+  "pv": {
+    "demo-b1": {
+      "blancs": 3,
+      "nuls": 2,
+      "numero": "PV-RB-001-20260702",
+      "votants": 105
+    },
+    "demo-b2": {
+      "blancs": 1,
+      "nuls": 0,
+      "numero": "PV-CA-014-20260702",
+      "votants": 56
+    }
+  },
+  "journal": [
+    {
+      "actif": "Test",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-02T12:17:28.969615",
+      "total": 58
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:16.528Z",
+      "total": 8
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:16.190Z",
+      "total": 9
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:15.765Z",
+      "total": 10
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:15.089Z",
+      "total": 11
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:14.908Z",
+      "total": 12
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:14.699Z",
+      "total": 13
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "أحمد الإدريسي",
+      "parti": "حزب التجمع الوطني للأحرار",
+      "time": "2026-07-02T10:55:14.294Z",
+      "total": 14
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:03.410Z",
+      "total": 34
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:03.206Z",
+      "total": 33
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:02.929Z",
+      "total": 32
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:02.718Z",
+      "total": 31
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:02.449Z",
+      "total": 30
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-02T10:50:01.963Z",
+      "total": 29
+    }
+  ],
+  "currentBureau": "demo-b1",
+  "mourakibActif": "محمد العلوي"
+}

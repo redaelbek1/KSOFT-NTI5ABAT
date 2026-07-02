@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}نظام إدارة الانتخابات{% endblock %} — كاسوفت</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-512.png') }}">
+
+    <meta name="theme-color" content="#374151">
+
+    {% block head %}{% endblock %}
+
+</head>
+
+<body>
+
+    <header class="kasoft-header">
+
+        <div class="kasoft-header-inner">
+
+            <div class="kasoft-brand">
+
+                <span class="kasoft-logo">كاسوفت</span>
+
+                <div>
+
+                    <h1>نظام إدارة الانتخابات</h1>
+
+                    <p data-i18n="brand_sub">معلومية واستشارات — المغرب</p>
+
+                </div>
+
+            </div>
+
+            <div class="header-actions">
+
+                <button type="button" id="lang-toggle" class="lang-toggle" title="اللغة">FR</button>
+
+                {% if kasoft_authenticated %}
+                <span id="sync-status" class="sync-badge sync-ok" data-kasoft="1" title="متصل">●</span>
+                {% endif %}
+
+                <span class="kasoft-badge">الإصدار <span class="num" lang="en-US" dir="ltr">1.0</span></span>
+
+            </div>
+
+        </div>
+
+        <nav class="kasoft-nav">
+
+            {% if kasoft_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="nav-link{% if active == 'dashboard' %} active{% endif %}" data-i18n="nav_dashboard">لوحة التحكم</a>
+            <a href="{{ url_for('export_results') }}" class="nav-link{% if active == 'export' %} active{% endif %}" data-i18n="nav_export">استخراج النتائج الرسمية</a>
+            <a href="{{ url_for('comptage') }}" class="nav-link{% if active == 'comptage' %} active{% endif %}" data-i18n="nav_comptage">عدّ الأصوات</a>
+            <a href="{{ url_for('configuration') }}" class="nav-link{% if active == 'config' %} active{% endif %}" data-i18n="nav_config">الإعدادات</a>
+            <a href="{{ url_for('logout') }}" class="nav-link nav-logout" data-i18n="nav_logout">خروج</a>
+            {% else %}
+            <a href="{{ url_for('export_results') }}" class="nav-link{% if active == 'export' %} active{% endif %}" data-i18n="nav_export">استخراج النتائج الرسمية</a>
+            <a href="{{ url_for('login', next=request.path) }}" class="nav-link{% if active == 'login' %} active{% endif %}" data-i18n="nav_login">دخول كاسوفت</a>
+            {% endif %}
+
+        </nav>
+
+    </header>
+
+
+
+    <main class="main-content">
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+
+
+    <footer class="kasoft-footer">
+
+        <p data-i18n="footer">كاسوفت للمعلومية والاستشارات — الدار البيضاء، المغرب — سري وموثوق</p>
+
+    </footer>
+
+
+
+    <script src="{{ url_for('static', filename='i18n.js') }}?v={{ asset_version }}"></script>
+
+    <script src="{{ url_for('static', filename='digits-fix.js') }}?v={{ asset_version }}"></script>
+
+    <script src="{{ url_for('static', filename='ui.js') }}?v={{ asset_version }}"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>
+
+
