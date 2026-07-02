@@ -1,9 +1,13 @@
+# Déploiement Render — connecter le repo GitHub puis « New Blueprint »
+# https://dashboard.render.com/blueprints
 services:
   - type: web
     name: nti5abat-elections
     runtime: docker
     plan: free
+    region: frankfurt
     healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: PORT
         value: 10000
@@ -12,4 +16,6 @@ services:
       - key: KASOFT_PIN
         sync: false
       - key: ASSET_VERSION
-        value: "20"
+        value: "25"
+      - key: FLASK_DEBUG
+        value: "0"

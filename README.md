@@ -27,7 +27,7 @@ copy .env.example .env
 |----------|-------------|--------|
 | `KASOFT_PIN` | Code d’accès KASOFT | `2026` |
 | `SECRET_KEY` | Clé de session Flask | clé de dev |
-| `ASSET_VERSION` | Version cache JS/CSS | `23` |
+| `ASSET_VERSION` | Version cache JS/CSS | `25` |
 | `FLASK_DEBUG` | Mode debug (`1` / `0`) | `0` |
 
 ## Lancement
@@ -89,6 +89,47 @@ python -m unittest discover -s tests -v
 
 L’app peut être installée sur mobile (manifest + service worker). Icônes : `static/icons/`.
 
+## Déploiement client (Render)
+
+GitHub **ne fait pas tourner** le site — il héberge le code. Pour une URL stable (sans ngrok ni PC allumé), déployez sur [Render](https://render.com) (gratuit pour démo).
+
+### Étapes
+
+1. **Compte Render** — inscrivez-vous avec le compte GitHub `redaelbek1`.
+2. **New → Blueprint** — choisissez le repo [KSOFT-NTI5ABAT](https://github.com/redaelbek1/KSOFT-NTI5ABAT).
+3. Render lit `render.yaml` et propose le service `nti5abat-elections` → **Apply**.
+4. **Variable obligatoire** — dans l’onglet *Environment* du service, définissez :
+   - `KASOFT_PIN` = code donné au client (ex. `2026`)
+   - `SECRET_KEY` est générée automatiquement
+5. Attendez le build Docker (5–15 min la première fois).
+6. URL finale : `https://nti5abat-elections.onrender.com` (ou le nom affiché par Render).
+
+### URLs à envoyer au client
+
+| Page | URL |
+|------|-----|
+| Export elections.ma (public) | `https://VOTRE-URL.onrender.com/export` |
+| Connexion KASOFT | `https://VOTRE-URL.onrender.com/login` |
+| Tableau de bord | `https://VOTRE-URL.onrender.com/dashboard` |
+
+### Première utilisation sur le cloud
+
+1. Connectez-vous avec le PIN.
+2. **Configuration** → « تحميل بيانات تجريبية » / données démo pour préremplir bureaux et partis.
+3. Les filtres géo (export) peuvent prendre **10–30 s** au premier chargement d’une province.
+
+### Limites plan gratuit Render
+
+| Sujet | Comportement |
+|-------|----------------|
+| Mise en veille | Après ~15 min sans visite ; 1re ouverture = **30–60 s** |
+| Données KASOFT | SQLite sur disque éphémère — peut se réinitialiser au redéploiement ; utilisez sauvegarde JSON |
+| ngrok | Plus nécessaire une fois Render actif |
+
+### Mises à jour
+
+Chaque `git push` sur `master` redéploie automatiquement (`autoDeploy: true` dans `render.yaml`).
+
 ## Dépannage
 
 | Problème | Solution |
@@ -97,6 +138,8 @@ L’app peut être installée sur mobile (manifest + service worker). Icônes : 
 | Filtres géo vides au 1er lancement | Attendre le chargement Playwright ou utiliser le cache `data/geo_disk/` |
 | Session expirée | Reconnectez-vous via `/login` |
 | Changements JS non visibles | Ctrl+Shift+R ou augmenter `ASSET_VERSION` |
+| Render : page blanche longtemps | Plan gratuit en veille — attendre ~1 min puis recharger |
+| Render : login ne tient pas | Vérifier `SECRET_KEY` et `KASOFT_PIN` dans Environment |
 
 ## Archive
 

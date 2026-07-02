@@ -39,6 +39,11 @@ app.secret_key = os.environ.get("SECRET_KEY", "kasoft-electoral-dev-key")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+if os.environ.get("FLASK_DEBUG", "0") != "1":
+    app.config["SESSION_COOKIE_SECURE"] = True
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 init_db()
 cleanup_output()
