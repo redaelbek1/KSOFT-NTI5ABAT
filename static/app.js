@@ -9,6 +9,10 @@ const ELECTION_YEARS = {
     ],
 };
 
+function tr(key) {
+    return window.KasoftI18n?.t(key) || key;
+}
+
 const els = {
     type: document.getElementById("election-type"),
     year: document.getElementById("election-year"),
@@ -64,32 +68,32 @@ function validateSelection() {
     const circ = parseInt(els.circ.value, 10);
 
     if (communal && !region) {
-        alert("المرجو اختيار جهة");
+        alert(tr("exp_err_region"));
         return false;
     }
     if (communal && !province) {
-        alert("المرجو اختيار عمالة أو إقليم");
+        alert(tr("exp_err_province"));
         return false;
     }
     if (communal && !commune) {
-        alert("المرجو اختيار جماعة أو مقاطعة");
+        alert(tr("exp_err_commune"));
         return false;
     }
     if (communal && !circ) {
-        alert("المرجو اختيار دائرة انتخابية");
+        alert(tr("exp_err_circ"));
         return false;
     }
     return true;
 }
 
 function resetDependents() {
-    els.province.innerHTML = '<option value="0">اختر العمالة أو الإقليم</option>';
+    els.province.innerHTML = `<option value="0">${tr("exp_ph_province")}</option>`;
     els.province.disabled = true;
-    els.commune.innerHTML = '<option value="0">اختر الجماعة</option>';
+    els.commune.innerHTML = `<option value="0">${tr("exp_ph_commune")}</option>`;
     els.commune.disabled = true;
-    els.circ.innerHTML = '<option value="0">اختر الدائرة الانتخابية</option>';
+    els.circ.innerHTML = `<option value="0">${tr("exp_ph_circ")}</option>`;
     if (!isCommunal()) {
-        els.circ.innerHTML = '<option value="0">جميع الدوائر</option>';
+        els.circ.innerHTML = `<option value="0">${tr("exp_ph_all_circ")}</option>`;
     }
     clearPreview();
 }
@@ -137,7 +141,7 @@ function renderPreview(rows, communal) {
 async function apiGet(url) {
     const res = await fetch(url);
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "خطأ في التحميل");
+    if (!res.ok) throw new Error(data.error || tr("exp_err_load"));
     if (data && data.error) throw new Error(data.error);
     return data;
 }
@@ -145,23 +149,23 @@ async function apiGet(url) {
 async function loadCircuitsLegislative(token) {
     const region = parseInt(els.region.value, 10);
     const province = parseInt(els.province.value, 10);
-    els.status.textContent = "جاري تحميل الدوائر...";
+    els.status.textContent = tr("exp_loading_circ");
     const data = await apiGet(
         `/api/circuits?election=${electionKey()}&region=${region}&province=${province}`
     );
     if (token !== loadToken) return;
-    fillOptions(els.circ, data, "جميع الدوائر");
+    fillOptions(els.circ, data, tr("exp_ph_all_circ"));
     els.status.textContent = "";
 }
 
 async function loadProvinces(token) {
     const region = parseInt(els.region.value, 10);
-    els.status.textContent = "جاري تحميل العمالات...";
+    els.status.textContent = tr("exp_loading_provinces");
     const data = await apiGet(
         `/api/provinces?election=${electionKey()}&region=${region}`
     );
     if (token !== loadToken) return;
-    fillOptions(els.province, data, "اختر العمالة أو الإقليم");
+    fillOptions(els.province, data, tr("exp_ph_province"));
     els.status.textContent = "";
 }
 
@@ -169,14 +173,14 @@ async function loadCommunes(token) {
     const region = parseInt(els.region.value, 10);
     const province = parseInt(els.province.value, 10);
     if (!province) return;
-    els.status.textContent = "جاري تحميل الجماعات (10-30 ثانية أول مرة)...";
+    els.status.textContent = tr("exp_loading_communes");
     const data = await apiGet(
         `/api/communes?election=${electionKey()}&region=${region}&province=${province}`
     );
     if (token !== loadToken) return;
-    fillOptions(els.commune, data, "اختر الجماعة");
+    fillOptions(els.commune, data, tr("exp_ph_commune"));
     els.status.innerHTML = data.length
-        ? `تم تحميل <span class="num" lang="en-US" dir="ltr">${data.length}</span> جماعة`
+        ? `${tr("exp_loaded_communes_prefix")} <span class="num" lang="en-US" dir="ltr">${data.length}</span> ${tr("exp_loaded_communes_suffix")}`
         : "";
 }
 
@@ -185,12 +189,12 @@ async function loadCircuitsCommunal(token) {
     const province = parseInt(els.province.value, 10);
     const commune = parseInt(els.commune.value, 10);
     if (!commune) return;
-    els.status.textContent = "جاري تحميل الدوائر...";
+    els.status.textContent = tr("exp_loading_circ");
     const data = await apiGet(
         `/api/circuits?election=${electionKey()}&region=${region}&province=${province}&commune=${commune}`
     );
     if (token !== loadToken) return;
-    fillOptions(els.circ, data, "اختر الدائرة الانتخابية");
+    fillOptions(els.circ, data, tr("exp_ph_circ"));
     els.status.textContent = "";
 }
 
@@ -200,9 +204,10 @@ function onTypeChange() {
     const communal = isCommunal();
 
     els.communeWrap.classList.toggle("hidden", !communal);
-    els.circLabel.textContent = communal
-        ? "الدائرة الانتخابية"
-        : "الدائرة الانتخابية البرلمانية";
+    if (els.circLabel) {
+        els.circLabel.textContent = communal ? tr("exp_circ_com") : tr("exp_circ_leg");
+        els.circLabel.dataset.i18n = communal ? "exp_circ_com" : "exp_circ_leg";
+    }
 
     document.querySelectorAll(".leg-only").forEach((opt) => {
         opt.hidden = communal;
@@ -232,7 +237,7 @@ function updateYears() {
 
 function showError(e) {
     els.status.textContent = "";
-    const msg = e.message || "خطأ في التحميل";
+    const msg = e.message || tr("exp_err_load");
     if (window.Ui) Ui.toast(msg, "error");
     else alert(msg);
 }
@@ -241,7 +246,7 @@ async function runPreview() {
     if (!validateSelection()) return;
 
     els.preview.disabled = true;
-    els.status.textContent = "جاري جلب النتائج...";
+    els.status.textContent = tr("exp_loading_results");
 
     try {
         const res = await fetch("/api/preview", {
@@ -250,13 +255,13 @@ async function runPreview() {
             body: JSON.stringify(selectionPayload()),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "خطأ في التحميل");
+        if (!res.ok) throw new Error(data.error || tr("exp_err_load"));
 
         renderPreview(data.rows, data.communal);
-        els.status.innerHTML = `تم عرض <span class="num" lang="en-US" dir="ltr">${data.count}</span> سجل`;
+        els.status.innerHTML = `${tr("exp_preview_count_prefix")} <span class="num" lang="en-US" dir="ltr">${data.count}</span> ${tr("exp_preview_count_suffix")}`;
     } catch (e) {
         clearPreview();
-        const msg = e.message || "خطأ في التحميل";
+        const msg = e.message || tr("exp_err_load");
         if (window.Ui) Ui.toast(msg, "error");
         else alert(msg);
         els.status.textContent = "";
@@ -269,7 +274,7 @@ async function runDownload() {
     if (!validateSelection()) return;
 
     els.search.disabled = true;
-    els.status.textContent = "جاري تحميل الملف...";
+    els.status.textContent = tr("exp_loading_file");
 
     try {
         const res = await fetch("/api/download", {
@@ -280,18 +285,18 @@ async function runDownload() {
 
         if (!res.ok) {
             const err = await res.json();
-            throw new Error(err.error || "خطأ في التحميل");
+            throw new Error(err.error || tr("exp_err_load"));
         }
 
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "توزيع_الأصوات.csv";
+        a.download = tr("exp_csv_filename");
         a.click();
         URL.revokeObjectURL(url);
-        if (window.Ui) Ui.toast("تم التحميل بنجاح", "success");
-        else els.status.textContent = "تم التحميل بنجاح";
+        if (window.Ui) Ui.toast(tr("exp_download_ok"), "success");
+        else els.status.textContent = tr("exp_download_ok");
     } catch (e) {
         els.status.textContent = "";
         if (window.Ui) Ui.toast(e.message, "error");
@@ -323,11 +328,11 @@ if (els.type) {
         const token = loadToken;
         const province = parseInt(els.province.value, 10);
 
-        els.commune.innerHTML = '<option value="0">اختر الجماعة</option>';
+        els.commune.innerHTML = `<option value="0">${tr("exp_ph_commune")}</option>`;
         els.commune.disabled = true;
         els.circ.innerHTML = isCommunal()
-            ? '<option value="0">اختر الدائرة الانتخابية</option>'
-            : '<option value="0">جميع الدوائر</option>';
+            ? `<option value="0">${tr("exp_ph_circ")}</option>`
+            : `<option value="0">${tr("exp_ph_all_circ")}</option>`;
 
         if (!province) return;
         if (isCommunal()) {
@@ -348,6 +353,11 @@ if (els.type) {
     els.preview.addEventListener("click", runPreview);
     els.search.addEventListener("click", runDownload);
     updateYears();
+
+    document.addEventListener("kasoft:lang", () => {
+        if (window.KasoftI18n) KasoftI18n.applyI18n();
+        onTypeChange();
+    });
 }
 
 /* ── تصدير كل البيانات ── */
@@ -384,16 +394,14 @@ function pollBulkStatus() {
 
 async function startBulkExport(types) {
     const communal = types.includes("communal");
-    const msg = communal
-        ? "هذا التصدير يستغرق وقتاً طويلاً (ساعات للجماعية). هل تريد المتابعة؟"
-        : "سيتم تصدير كل الدوائر التشريعية (2021 و 2016). هل تريد المتابعة؟";
+    const msg = communal ? tr("exp_bulk_confirm_com") : tr("exp_bulk_confirm_leg");
     if (!confirm(msg)) return;
 
     setBulkButtonsDisabled(true);
     bulkProgress.classList.remove("hidden");
     bulkDownload.classList.add("hidden");
     bulkFill.style.width = "0%";
-    bulkMsg.textContent = "بدء التصدير...";
+    bulkMsg.textContent = tr("exp_bulk_starting");
 
     try {
         const res = await fetch("/api/export-all", {

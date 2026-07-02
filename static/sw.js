@@ -1,5 +1,5 @@
 /* Mise à jour immédiate — network-first, purge des anciens caches */
-const CACHE_ID = "kasoft-v12";
+const CACHE_ID = "kasoft-v14";
 
 self.addEventListener("install", () => self.skipWaiting());
 

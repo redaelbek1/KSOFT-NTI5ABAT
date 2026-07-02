@@ -4,115 +4,110 @@
 {% block content %}
 <div class="container">
     <section class="page-intro">
-        <h2>لوحة التحكم</h2>
-        <p>نظرة عامة على مكاتب الاقتراع والمشاركة والوحدات</p>
+        <h2 data-i18n="dash_title">لوحة التحكم</h2>
+        <p data-i18n="dash_intro">نظرة عامة على مكاتب الاقتراع والمشاركة والوحدات</p>
     </section>
 
     <div class="kpi-grid" id="dash-kpis">
         <div class="kpi-card">
             <span class="kpi-value num" id="kpi-bureaux" lang="en-US" dir="ltr">0</span>
-            <span class="kpi-label">مجموع المكاتب</span>
+            <span class="kpi-label" data-i18n="dash_kpi_bureaux">مجموع المكاتب</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-value num" id="kpi-ouverts" lang="en-US" dir="ltr">0</span>
-            <span class="kpi-label">مكاتب مفتوحة</span>
+            <span class="kpi-label" data-i18n="dash_kpi_open">مكاتب مفتوحة</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-value num" id="kpi-inscrits" lang="en-US" dir="ltr">0</span>
-            <span class="kpi-label">مجموع المسجلين</span>
+            <span class="kpi-label" data-i18n="dash_kpi_inscrits">مجموع المسجلين</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-value num" id="kpi-fermes" lang="en-US" dir="ltr">0</span>
-            <span class="kpi-label">مكاتب مغلقة</span>
+            <span class="kpi-label" data-i18n="dash_kpi_closed">مكاتب مغلقة</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-value num" id="kpi-votants" lang="en-US" dir="ltr">0</span>
-            <span class="kpi-label">مجموع المصوتين</span>
+            <span class="kpi-label" data-i18n="dash_kpi_votants">مجموع المصوتين</span>
         </div>
         <div class="kpi-card kpi-active">
             <span class="kpi-value num" id="kpi-participation" lang="en-US" dir="ltr">0%</span>
-            <span class="kpi-label">نسبة المشاركة</span>
+            <span class="kpi-label" data-i18n="dash_kpi_participation">نسبة المشاركة</span>
         </div>
     </div>
 
     <section class="card">
-        <div class="card-title">خريطة الجهات — المغرب</div>
+        <div class="card-title" data-i18n="dash_map_title">خريطة الجهات — المغرب</div>
         <div class="map-grid" id="morocco-map"></div>
     </section>
 
     <section class="card">
-        <div class="card-title">ترتيب الأحزاب — المجموع الإقليمي</div>
+        <div class="card-title" data-i18n="dash_rank_title">ترتيب الأحزاب — المجموع الإقليمي</div>
         <div id="dash-parti-rank" class="parti-rank-list"></div>
     </section>
 
     <section class="card">
-        <div class="card-title">مكاتب الاقتراع</div>
+        <div class="card-title" data-i18n="dash_bureaux_title">مكاتب الاقتراع</div>
         <div class="dash-toolbar">
-            <input type="search" id="dash-search" class="config-input" placeholder="بحث بالاسم أو المدينة أو الجهة...">
-            <select id="dash-filter-status" class="config-input config-input-sm">
-                <option value="">كل الحالات</option>
-                <option value="ouvert">مفتوح</option>
-                <option value="ferme">مغلق</option>
-                <option value="attente">في الانتظار</option>
-            </select>
+            <input type="search" id="dash-search" class="config-input" data-i18n-placeholder="dash_search_ph" placeholder="بحث بالاسم أو المدينة أو الجهة...">
+            <select id="dash-filter-status" class="config-input config-input-sm"></select>
             <select id="dash-filter-region" class="config-input">
-                <option value="">كل الجهات</option>
+                <option value="" data-i18n="dash_all_regions">كل الجهات</option>
             </select>
-            <a href="{{ url_for('configuration') }}" class="btn-primary btn-sm">+ إضافة مكتب</a>
-            <button type="button" id="btn-dash-rapport-pdf" class="btn-secondary btn-sm">تقرير PDF</button>
-            <button type="button" id="btn-dash-rapport-csv" class="btn-secondary btn-sm">تقرير CSV</button>
-            <button type="button" id="btn-dash-all-pv-zip" class="btn-secondary btn-sm">كل المحاضر ZIP</button>
+            <a href="{{ url_for('configuration') }}" class="btn-primary btn-sm" data-i18n="dash_add_bureau">+ إضافة مكتب</a>
+            <button type="button" id="btn-dash-rapport-pdf" class="btn-secondary btn-sm" data-i18n="dash_report_pdf">تقرير PDF</button>
+            <button type="button" id="btn-dash-rapport-csv" class="btn-secondary btn-sm" data-i18n="dash_report_csv">تقرير CSV</button>
+            <button type="button" id="btn-dash-all-pv-zip" class="btn-secondary btn-sm" data-i18n="dash_all_pv_zip">كل المحاضر ZIP</button>
         </div>
         <div class="table-wrap">
             <table class="dash-table">
                 <thead>
                     <tr>
-                        <th>المكتب</th>
-                        <th>المدينة</th>
-                        <th>الجهة</th>
-                        <th>الحالة</th>
-                        <th>مسجلون</th>
-                        <th>صحيحة</th>
-                        <th>مصوتون</th>
-                        <th>المشاركة</th>
-                        <th>إجراءات</th>
+                        <th data-i18n="dash_th_bureau">المكتب</th>
+                        <th data-i18n="dash_th_city">المدينة</th>
+                        <th data-i18n="dash_th_region">الجهة</th>
+                        <th data-i18n="dash_th_status">الحالة</th>
+                        <th data-i18n="dash_th_inscrits">مسجلون</th>
+                        <th data-i18n="dash_th_valid">صحيحة</th>
+                        <th data-i18n="dash_th_votants">مصوتون</th>
+                        <th data-i18n="dash_th_participation">المشاركة</th>
+                        <th data-i18n="dash_th_actions">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="dash-bureau-body"></tbody>
             </table>
         </div>
-        <p id="dash-empty" class="hint dash-empty hidden">لا توجد مكاتب مطابقة.</p>
+        <p id="dash-empty" class="hint dash-empty hidden" data-i18n="dash_empty">لا توجد مكاتب مطابقة.</p>
     </section>
 
     <section class="card">
-        <div class="card-title">دليل الاستخدام السريع</div>
+        <div class="card-title" data-i18n="dash_guide_title">دليل الاستخدام السريع</div>
         <ol class="guide-list">
-            <li><strong>الإعدادات</strong> — أضف مكاتب الاقتراع، الأحزاب، والمراقبين (أو «تحميل بيانات تجريبية»).</li>
-            <li><strong>عدّ الأصوات</strong> — اختر المكتب، أدخل اسم المراقب النشط، سجّل الأصوات بـ + / −.</li>
-            <li>أدخل <strong>الأوراق البيضاء والملغاة</strong> ثم غيّر الحالة إلى <strong>مغلق</strong> عند الانتهاء.</li>
-            <li>صدّر <strong>محضر PDF</strong> لكل مكتب أو <strong>كل المحاضر ZIP</strong> للأرشفة.</li>
-            <li>أرسل <strong>التقرير الإقليمي</strong> (TXT / CSV / PDF) للمقر الإقليمي.</li>
-            <li><strong>استخراج النتائج الرسمية</strong> — بيانات elections.ma (تشريعية / جماعية).</li>
+            <li data-i18n-html="dash_guide_1"><strong>الإعدادات</strong> — أضف مكاتب الاقتراع، الأحزاب، والمراقبين (أو «تحميل بيانات تجريبية»).</li>
+            <li data-i18n-html="dash_guide_2"><strong>عدّ الأصوات</strong> — اختر المكتب، أدخل اسم المراقب النشط، سجّل الأصوات بـ + / −.</li>
+            <li data-i18n-html="dash_guide_3">أدخل <strong>الأوراق البيضاء والملغاة</strong> ثم غيّر الحالة إلى <strong>مغلق</strong> عند الانتهاء.</li>
+            <li data-i18n-html="dash_guide_4">صدّر <strong>محضر PDF</strong> لكل مكتب أو <strong>كل المحاضر ZIP</strong> للأرشفة.</li>
+            <li data-i18n-html="dash_guide_5">أرسل <strong>التقرير الإقليمي</strong> (TXT / CSV / PDF) للمقر الإقليمي.</li>
+            <li data-i18n-html="dash_guide_6"><strong>استخراج النتائج الرسمية</strong> — بيانات elections.ma (تشريعية / جماعية).</li>
         </ol>
     </section>
 
     <section class="card">
-        <div class="card-title">الوحدات</div>
+        <div class="card-title" data-i18n="dash_modules_title">الوحدات</div>
         <div class="module-list">
             <a href="{{ url_for('export_results') }}" class="module-item module-active">
-                <strong>استخراج النتائج الرسمية</strong>
-                <span>تصفية ومعاينة وتحميل نتائج elections.ma</span>
-                <em>نشط</em>
+                <strong data-i18n="nav_export">استخراج النتائج الرسمية</strong>
+                <span data-i18n="dash_module_export_desc">تصفية ومعاينة وتحميل نتائج elections.ma</span>
+                <em data-i18n="dash_module_active">نشط</em>
             </a>
             <a href="{{ url_for('comptage') }}" class="module-item module-active">
-                <strong>عدّ الأصوات</strong>
-                <span>تسجيل الأصوات — محضر PDF + تقرير إقليمي</span>
-                <em>نشط</em>
+                <strong data-i18n="nav_comptage">عدّ الأصوات</strong>
+                <span data-i18n="dash_module_comptage_desc">تسجيل الأصوات — محضر PDF + تقرير إقليمي</span>
+                <em data-i18n="dash_module_active">نشط</em>
             </a>
             <a href="{{ url_for('configuration') }}" class="module-item module-active">
-                <strong>الإعدادات</strong>
-                <span>مكاتب الاقتراع، الأحزاب، المراقبون</span>
-                <em>نشط</em>
+                <strong data-i18n="nav_config">الإعدادات</strong>
+                <span data-i18n="dash_module_config_desc">مكاتب الاقتراع، الأحزاب، المراقبون</span>
+                <em data-i18n="dash_module_active">نشط</em>
             </a>
         </div>
     </section>
@@ -120,22 +115,22 @@
 
 <div id="modal-edit-bureau" class="modal hidden">
     <div class="modal-box modal-box-wide">
-        <h3>تعديل المكتب</h3>
+        <h3 data-i18n="cfg_edit_bureau">تعديل المكتب</h3>
         <input type="hidden" id="edit-bureau-id">
         <div class="config-add-grid modal-edit-grid">
-            <input type="text" id="edit-bureau-name" placeholder="اسم المكتب" class="config-input">
-            <input type="text" id="edit-bureau-ville" placeholder="المدينة" class="config-input">
+            <input type="text" id="edit-bureau-name" data-i18n-placeholder="ph_bureau_name" placeholder="اسم المكتب" class="config-input">
+            <input type="text" id="edit-bureau-ville" data-i18n-placeholder="ph_ville" placeholder="المدينة" class="config-input">
             <select id="edit-bureau-region" class="config-input"></select>
-            <input type="text" id="edit-bureau-code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
-            <input type="text" id="edit-bureau-centre" placeholder="المركز" class="config-input">
-            <input type="text" id="edit-bureau-adresse" placeholder="العنوان" class="config-input">
-            <input type="number" id="edit-bureau-inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
-            <input type="number" id="edit-bureau-capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
+            <input type="text" id="edit-bureau-code" data-i18n-placeholder="ph_code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
+            <input type="text" id="edit-bureau-centre" data-i18n-placeholder="ph_centre" placeholder="المركز" class="config-input">
+            <input type="text" id="edit-bureau-adresse" data-i18n-placeholder="ph_adresse" placeholder="العنوان" class="config-input">
+            <input type="number" id="edit-bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
+            <input type="number" id="edit-bureau-capacite" data-i18n-placeholder="ph_capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
             <select id="edit-bureau-status" class="config-input"></select>
         </div>
         <div class="modal-actions">
-            <button type="button" id="btn-save-bureau-edit" class="btn-primary">حفظ</button>
-            <button type="button" id="btn-cancel-bureau-edit" class="btn-secondary">إلغاء</button>
+            <button type="button" id="btn-save-bureau-edit" class="btn-primary" data-i18n="btn_save">حفظ</button>
+            <button type="button" id="btn-cancel-bureau-edit" class="btn-secondary" data-i18n="btn_cancel">إلغاء</button>
         </div>
     </div>
 </div>

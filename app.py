@@ -89,7 +89,7 @@ def api_login_required(view):
 def inject_template_globals():
     return {
         "kasoft_authenticated": is_authenticated(),
-        "asset_version": os.environ.get("ASSET_VERSION", "23"),
+        "asset_version": os.environ.get("ASSET_VERSION", "25"),
     }
 
 export_state = {

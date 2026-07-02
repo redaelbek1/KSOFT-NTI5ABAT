@@ -1,5 +1,18 @@
 let state = KasoftStore.loadState();
 
+function tr(key) {
+    return window.KasoftI18n?.t(key) || key;
+}
+
+function statusOptionsHtml() {
+    const labelFn = window.KasoftI18n?.statusLabel
+        ? (k) => KasoftI18n.statusLabel(k)
+        : (k) => KasoftStore.BUREAU_STATUSES[k]?.label || k;
+    return Object.keys(KasoftStore.BUREAU_STATUSES)
+        .map((k) => `<option value="${k}">${labelFn(k)}</option>`)
+        .join("");
+}
+
 const els = {
     search: document.getElementById("dash-search"),
     filterStatus: document.getElementById("dash-filter-status"),
@@ -29,16 +42,17 @@ const els = {
 };
 
 function fillRegionSelect(select) {
+    const allLabel = tr("dash_all_regions");
     select.innerHTML =
-        '<option value="">اختر الجهة</option>' +
+        `<option value="">${allLabel}</option>` +
         KasoftStore.MOROCCO_REGIONS.map((r) => `<option value="${r}">${r}</option>`).join("");
 }
 
 function fillStatusSelect(select, includeAll) {
-    const opts = Object.entries(KasoftStore.BUREAU_STATUSES).map(
-        ([k, v]) => `<option value="${k}">${v.label}</option>`
-    );
-    select.innerHTML = includeAll ? '<option value="">كل الحالات</option>' + opts.join("") : opts.join("");
+    const opts = statusOptionsHtml();
+    select.innerHTML = includeAll
+        ? `<option value="">${tr("dash_all_status")}</option>${opts}`
+        : opts;
 }
 
 function filteredBureaux() {
@@ -72,16 +86,25 @@ function renderTable() {
     els.body.innerHTML = list
         .map((b) => {
             const part = KasoftStore.getParticipation(state, b.id);
+            const stLabel = window.KasoftI18n?.statusLabel
+                ? KasoftI18n.statusLabel(b.status)
+                : KasoftStore.BUREAU_STATUSES[b.status]?.label || b.status;
+            const statusOpts = Object.keys(KasoftStore.BUREAU_STATUSES)
+                .map((k) => {
+                    const lbl = window.KasoftI18n?.statusLabel
+                        ? KasoftI18n.statusLabel(k)
+                        : KasoftStore.BUREAU_STATUSES[k].label;
+                    return `<option value="${k}"${b.status === k ? " selected" : ""}>${lbl}</option>`;
+                })
+                .join("");
             return `
             <tr>
                 <td>${b.name}${b.code ? ` <span class="hint num" lang="en-US" dir="ltr">[${b.code}]</span>` : ""}</td>
                 <td>${b.ville}</td>
                 <td>${b.region}</td>
                 <td>
-                    <select class="dash-status-select config-input config-input-sm" data-status="${b.id}" aria-label="الحالة">
-                        ${Object.entries(KasoftStore.BUREAU_STATUSES).map(([k, v]) =>
-                            `<option value="${k}"${b.status === k ? " selected" : ""}>${v.label}</option>`
-                        ).join("")}
+                    <select class="dash-status-select config-input config-input-sm" data-status="${b.id}" aria-label="${tr("dash_th_status")}">
+                        ${statusOpts}
                     </select>
                 </td>
                 <td class="num" lang="en-US">${b.inscrits}</td>
@@ -94,11 +117,11 @@ function renderTable() {
                     </div>
                 </td>
                 <td class="dash-actions">
-                    <button type="button" class="btn-link" data-edit="${b.id}">تعديل</button>
-                    <button type="button" class="btn-link" data-dup="${b.id}">نسخ</button>
+                    <button type="button" class="btn-link" data-edit="${b.id}">${tr("dash_edit")}</button>
+                    <button type="button" class="btn-link" data-dup="${b.id}">${tr("dash_dup")}</button>
                     <button type="button" class="btn-link" data-pdf="${b.id}">PDF</button>
-                    <a href="/comptage?bureau=${b.id}" class="btn-link">عدّ</a>
-                    <button type="button" class="btn-link btn-link-danger" data-del="${b.id}">حذف</button>
+                    <a href="/comptage?bureau=${b.id}" class="btn-link">${tr("dash_count")}</a>
+                    <button type="button" class="btn-link btn-link-danger" data-del="${b.id}">${tr("dash_del")}</button>
                 </td>
             </tr>`;
         })
@@ -132,8 +155,8 @@ function renderMap() {
         return `
         <button type="button" class="map-region${active}${heat}" data-region="${region}">
             <strong>${region}</strong>
-            <span class="num" lang="en-US">${stats.count}</span> مكتب
-            <span class="num" lang="en-US">${stats.votants}</span> مصوت
+            <span class="num" lang="en-US">${stats.count}</span> ${tr("dash_map_bureau")}
+            <span class="num" lang="en-US">${stats.votants}</span> ${tr("dash_map_voter")}
             <span class="map-pct num" lang="en-US">${stats.pct}%</span>
         </button>`;
     }).join("");
@@ -156,7 +179,7 @@ function renderPartiRank() {
             <span class="num rank-total" lang="en-US">${p.total}</span>
         </div>`
             )
-            .join("") || '<p class="hint">لا توجد أحزاب — أضفها من الإعدادات</p>';
+            .join("") || `<p class="hint">${tr("dash_no_partis")}</p>`;
 }
 
 function render() {
@@ -303,7 +326,17 @@ if (els.btnAllPvZip) {
 
 fillRegionSelect(els.filterRegion);
 fillRegionSelect(els.editRegion);
+fillStatusSelect(els.filterStatus, true);
 fillStatusSelect(els.editStatus, false);
+
+document.addEventListener("kasoft:lang", () => {
+    if (window.KasoftI18n) KasoftI18n.applyI18n();
+    fillRegionSelect(els.filterRegion);
+    fillRegionSelect(els.editRegion);
+    fillStatusSelect(els.filterStatus, true);
+    fillStatusSelect(els.editStatus, false);
+    render();
+});
 
 KasoftStore.loadStateAsync().then((s) => {
     state = s;
