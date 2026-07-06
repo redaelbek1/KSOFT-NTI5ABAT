@@ -1,0 +1,39 @@
+# Phase 2 — KASOFT + PostgreSQL (local ou VPS)
+# Usage: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kasoft
+      POSTGRES_PASSWORD: kasoft_dev
+      POSTGRES_DB: kasoft
+    volumes:
+      - kasoft_pg:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kasoft -d kasoft"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:10000"
+    environment:
+      PORT: "10000"
+      DATABASE_URL: postgresql://kasoft:kasoft_dev@db:5432/kasoft
+      KASOFT_PHASE2: "1"
+      KASOFT_ADMIN_PIN: "2026"
+      KASOFT_MOURAKIB_PIN: "3030"
+      SECRET_KEY: change-me-in-production
+      ASSET_VERSION: "38"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  kasoft_pg:

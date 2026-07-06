@@ -11,12 +11,18 @@ from flask import Flask, jsonify, redirect, render_template, request, send_file,
 
 from bulk_export import export_all
 from kasoft_auth import (
-    check_pin,
     clear_login_attempts,
+    get_bureau_id,
+    get_role,
+    is_admin,
     is_authenticated,
     login_blocked,
     login_user,
+    logout_user,
+    mourakib_bureau_allowed,
     record_failed_login,
+    resolve_login,
+    restrict_mourakib_payload,
 )
 from kasoft_db import init_db, record_vote, load_state as load_server_state, save_state as save_server_state
 from kasoft_merge import merge_kasoft_states
@@ -90,11 +96,38 @@ def api_login_required(view):
     return wrapped
 
 
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not is_authenticated():
+            return redirect(url_for("login", next=request.path))
+        if not is_admin():
+            return redirect(url_for("dashboard"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+def api_admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not is_authenticated():
+            return jsonify({"error": "غير مصرح."}), 401
+        if not is_admin():
+            return jsonify({"error": "غير مصرح — مسؤول فقط."}), 403
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
 @app.context_processor
 def inject_template_globals():
     return {
         "kasoft_authenticated": is_authenticated(),
-        "asset_version": os.environ.get("ASSET_VERSION", "25"),
+        "kasoft_is_admin": is_admin(),
+        "kasoft_role": get_role() if is_authenticated() else None,
+        "kasoft_bureau_id": get_bureau_id() if is_authenticated() else None,
+        "asset_version": os.environ.get("ASSET_VERSION", "39"),
     }
 
 export_state = {
@@ -158,7 +191,7 @@ def comptage():
 
 
 @app.route("/configuration")
-@login_required
+@admin_required
 def configuration():
     return render_template("configuration.html", active="config")
 
@@ -166,28 +199,50 @@ def configuration():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     client_ip = request.remote_addr or "unknown"
+
+    def _login_bureaux():
+        state = load_server_state() or {}
+        return [
+            {"id": b["id"], "name": b.get("name", ""), "code": b.get("code", "")}
+            for b in state.get("bureaux", [])
+            if isinstance(b, dict) and b.get("id")
+        ]
+
     if request.method == "POST":
+        bureaux = _login_bureaux()
         if login_blocked(client_ip):
             return render_template(
                 "login.html",
                 error="محاولات كثيرة. انتظر 5 دقائق ثم أعد المحاولة.",
+                bureaux=bureaux,
             )
         pin = request.form.get("pin", "")
-        if check_pin(pin):
+        bureau_id = (request.form.get("bureau_id") or "").strip() or None
+        role, scoped_bureau = resolve_login(pin, bureau_id)
+        if role:
             clear_login_attempts(client_ip)
-            login_user()
+            login_user(role, scoped_bureau)
             nxt = request.form.get("next") or request.args.get("next")
             if nxt and nxt.startswith("/") and not nxt.startswith("//"):
+                if role != "admin" and nxt.startswith("/configuration"):
+                    return redirect(url_for("dashboard"))
                 return redirect(nxt)
+            if scoped_bureau:
+                return redirect(f"/comptage?bureau={scoped_bureau}")
             return redirect(url_for("dashboard"))
         record_failed_login(client_ip)
-        return render_template("login.html", error="رمز الدخول غير صحيح.")
-    return render_template("login.html", error=None)
+        return render_template(
+            "login.html",
+            error="رمز الدخول غير صحيح.",
+            bureaux=bureaux,
+            selected_bureau_id=bureau_id,
+        )
+    return render_template("login.html", error=None, bureaux=_login_bureaux())
 
 
 @app.route("/logout")
 def logout():
-    session.pop("kasoft_auth", None)
+    logout_user()
     return redirect(url_for("login"))
 
 
@@ -372,6 +427,16 @@ def _validate_kasoft_payload(data):
     return None
 
 
+@app.route("/api/kasoft/session")
+@api_login_required
+def kasoft_session_info():
+    return jsonify({
+        "token": session.get("kasoft_api_token"),
+        "role": get_role(),
+        "bureau_id": get_bureau_id(),
+    })
+
+
 @app.route("/api/kasoft/stats")
 @api_login_required
 def kasoft_stats():
@@ -389,7 +454,7 @@ def kasoft_stats():
 
 
 @app.route("/api/kasoft/clear", methods=["POST"])
-@api_login_required
+@api_admin_required
 def kasoft_clear():
     empty = {
         "bureaux": [],
@@ -420,13 +485,15 @@ def kasoft_state():
         return jsonify({"error": err}), 400
     incoming = migrate_state_payload(data)
     existing = load_server_state() or {}
+    if not is_admin():
+        incoming = restrict_mourakib_payload(incoming, existing)
     merged = merge_kasoft_states(existing, incoming)
     save_server_state(merged)
     return jsonify({"ok": True, "state": merged})
 
 
 @app.route("/api/kasoft/load-demo", methods=["POST"])
-@api_login_required
+@api_admin_required
 def kasoft_load_demo():
     from kasoft_seed import demo_state
 
@@ -441,6 +508,8 @@ def kasoft_bureaux():
     if request.method == "GET":
         data = load_server_state() or {}
         return jsonify(data.get("bureaux", []))
+    if not is_admin():
+        return jsonify({"error": "غير مصرح — مسؤول فقط."}), 403
     payload = request.json or {}
     state = load_server_state() or {
         "bureaux": [],
@@ -476,6 +545,8 @@ def kasoft_post_votes():
     required = ("bureau_id", "parti_id", "mourakib_id", "delta", "actif")
     if not all(k in data for k in required):
         return jsonify({"error": "حقول ناقصة."}), 400
+    if not mourakib_bureau_allowed(data["bureau_id"]):
+        return jsonify({"error": "غير مصرح لهذا المكتب."}), 403
     state = load_server_state() or {}
     state, changed = record_vote(
         state,
@@ -577,10 +648,13 @@ def service_worker():
 
 
 if __name__ == "__main__":
-    import os
-
     Path("output").mkdir(exist_ok=True)
     Path("data/geo_disk").mkdir(parents=True, exist_ok=True)
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "0") == "1"
-    app.run(host="0.0.0.0", port=port, debug=debug, threaded=True)
+    if os.environ.get("KASOFT_PHASE2", "1") == "1":
+        import uvicorn
+
+        uvicorn.run("asgi:app", host="0.0.0.0", port=port, reload=debug)
+    else:
+        app.run(host="0.0.0.0", port=port, debug=debug, threaded=True)

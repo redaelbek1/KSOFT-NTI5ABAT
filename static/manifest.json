@@ -6,8 +6,8 @@
   "dir": "rtl",
   "start_url": "/export",
   "display": "standalone",
-  "background_color": "#f5f6f8",
-  "theme_color": "#374151",
+  "background_color": "#f0f4f9",
+  "theme_color": "#185ea5",
   "orientation": "any",
   "icons": [
     {

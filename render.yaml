@@ -1,21 +1,35 @@
 # Déploiement Render — connecter le repo GitHub puis « New Blueprint »
 # https://dashboard.render.com/blueprints
+databases:
+  - name: kasoft-db
+    plan: free
+    databaseName: kasoft
+    user: kasoft
+
 services:
   - type: web
     name: nti5abat-elections
     runtime: docker
     plan: free
     region: frankfurt
-    healthCheckPath: /api/health
+    healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: PORT
         value: 10000
       - key: SECRET_KEY
         generateValue: true
-      - key: KASOFT_PIN
+      - key: KASOFT_ADMIN_PIN
         sync: false
+      - key: KASOFT_MOURAKIB_PIN
+        sync: false
+      - key: KASOFT_PHASE2
+        value: "1"
       - key: ASSET_VERSION
-        value: "25"
+        value: "39"
       - key: FLASK_DEBUG
         value: "0"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kasoft-db
+          property: connectionString

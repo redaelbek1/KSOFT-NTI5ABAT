@@ -1,5 +1,9 @@
 let state = KasoftStore.loadState();
 
+function tr(key) {
+    return window.KasoftI18n?.t(key) || key;
+}
+
 const els = {
     empty: document.getElementById("comptage-empty"),
     app: document.getElementById("comptage-app"),
@@ -25,6 +29,9 @@ const els = {
     btnJournal: document.getElementById("btn-export-journal"),
     btnAllPvZip: document.getElementById("btn-export-all-pv-zip"),
     btnResetVotes: document.getElementById("btn-reset-bureau-votes"),
+    btnCloture: document.getElementById("btn-cloture-bureau"),
+    btnEmailPv: document.getElementById("btn-email-pv"),
+    btnSendSummary: document.getElementById("btn-send-summary"),
     keyboardHint: document.getElementById("keyboard-hint"),
     lockedBanner: document.getElementById("comptage-locked-banner"),
     closeSuggestion: document.getElementById("close-suggestion"),
@@ -32,6 +39,24 @@ const els = {
 };
 
 let lastVoteTarget = null;
+
+const isAdmin = () => (window.KASOFT_ROLE || "admin") === "admin";
+
+function scopedBureauId() {
+    return window.KASOFT_SCOPED_BUREAU_ID || null;
+}
+
+function enforceScopedBureau() {
+    const sid = scopedBureauId();
+    if (sid) state.currentBureau = sid;
+}
+
+function bureauxForSelect() {
+    const sid = scopedBureauId();
+    if (!sid) return state.bureaux;
+    const list = state.bureaux.filter((b) => b.id === sid);
+    return list.length ? list : [{ id: sid, name: sid, status: "attente" }];
+}
 
 function isReady() {
     return state.bureaux.length > 0 && state.partis.length > 0;
@@ -128,7 +153,8 @@ function applyVoteLocally(partiId, mourakibId, delta, actif) {
         parti: parti?.name || "",
         mourakib: mourakib?.name || "",
         action: delta > 0 ? "+1" : "-1",
-        total: KasoftStore.getPartiTotal(state, bureauId, partiId),
+        total: next,
+        partiTotal: KasoftStore.getPartiTotal(state, bureauId, partiId),
     });
     return true;
 }
@@ -156,7 +182,7 @@ async function changeVote(partiId, mourakibId, delta) {
             bureauId, partiId, mourakibId, delta, actif
         );
         if (data.state) {
-            state = KasoftStore.applyServerState(state, data.state);
+            state = KasoftStore.applyServerState(state, data.state, { authoritativeVotes: true });
         }
         render();
         return;
@@ -266,7 +292,7 @@ function renderGrid(leaderId) {
                     <div class="parti-progress-fill" style="width:${pct}%;background:${p.color}"></div>
                 </div>
                 <div class="parti-card-body">
-                    ${mourakibRows || '<p class="hint">لا يوجد مراقبون — أضفهم من الإعدادات</p>'}
+                    ${mourakibRows || `<p class="hint">${tr("cpt_no_mourakibs")}</p>`}
                 </div>
             </div>`;
         })
@@ -274,8 +300,9 @@ function renderGrid(leaderId) {
 }
 
 function renderJournal() {
+    const entries = KasoftStore.filterJournalForBureau(state, currentBureauId());
     els.journal.innerHTML =
-        state.journal
+        entries
             .map(
                 (j) => `
         <tr>
@@ -313,14 +340,27 @@ function renderStatusSelect() {
 
 function renderBureauSelect() {
     renderStatusSelect();
-    els.bureau.innerHTML = state.bureaux
+    const sid = scopedBureauId();
+    const list = bureauxForSelect();
+    if (sid) state.currentBureau = sid;
+    els.bureau.innerHTML = list
         .map((b) => {
             const code = b.code ? ` [${b.code}]` : "";
-            return `<option value="${b.id}"${b.id === state.currentBureau ? " selected" : ""}>${b.name}${code}</option>`;
+            const selected = b.id === (sid || state.currentBureau) ? " selected" : "";
+            return `<option value="${b.id}"${selected}>${b.name}${code}</option>`;
         })
         .join("");
+    if (sid) {
+        els.bureau.value = sid;
+        els.bureau.disabled = true;
+    } else {
+        els.bureau.disabled = false;
+    }
+    const hint = document.getElementById("scoped-bureau-hint");
+    if (hint) hint.classList.toggle("hidden", !sid);
     const b = currentBureau();
     if (b) els.status.value = b.status || "attente";
+    if (els.status) els.status.disabled = !isAdmin();
     const bid = currentBureauId();
     state.pv = state.pv || {};
     const pv = state.pv[bid] || {};
@@ -358,8 +398,13 @@ els.bureau.addEventListener("change", () => {
     render();
 });
 
-els.status.addEventListener("change", () => {
-    if (els.status.value === "ferme" && !confirm("إغلاق المكتب؟ لن يمكن تعديل الأصوات بعد ذلك.")) {
+els.status?.addEventListener("change", () => {
+    if (!isAdmin()) {
+        const b = currentBureau();
+        els.status.value = b?.status || "attente";
+        return;
+    }
+    if (els.status.value === "ferme" && !confirm(tr("cpt_close_confirm"))) {
         const b = currentBureau();
         els.status.value = b?.status || "attente";
         return;
@@ -382,6 +427,73 @@ els.grid.addEventListener("click", (e) => {
 
 if (els.btnResetVotes) {
     els.btnResetVotes.addEventListener("click", resetBureauVotes);
+}
+
+async function clotureAndExport() {
+    const bureau = currentBureau();
+    if (!bureau) return;
+    const bid = currentBureauId();
+    if (bureau.status === "ferme") {
+        if (window.Ui) Ui.toast(tr("cpt_already_closed"), "info");
+        return;
+    }
+    const check = KasoftStore.validateBureauPV(state, bid);
+    if (!check.ok && !confirm(`${check.errors.join("\n")}\n\n${tr("cpt_cloture_force")}`)) {
+        return;
+    }
+    if (!confirm(tr("cpt_cloture_confirm"))) return;
+
+    const result = KasoftStore.cloturerBureau(state, bid, { force: !check.ok });
+    if (!result.ok) return;
+
+    els.status.value = "ferme";
+    persist();
+    KasoftStore.downloadText(
+        `محضر_${bureau.name.replace(/\s+/g, "_")}.txt`,
+        KasoftStore.buildBureauPVLines(state, bid)
+    );
+    if (window.Ui) Ui.toast(tr("cpt_cloture_done"), "success");
+
+    if (confirm(tr("cpt_cloture_pdf_prompt"))) {
+        try {
+            await KasoftStore.downloadPdf("/api/kasoft/export-pv-pdf", state, {
+                bureau_id: bid,
+                filename: "محضر_المكتب.pdf",
+            });
+        } catch (e) {
+            if (window.Ui) Ui.toast(e.message, "error");
+        }
+    }
+    if (confirm(tr("cpt_email_prompt"))) {
+        KasoftStore.openPvEmail(state, bid);
+    }
+    render();
+}
+
+if (els.btnCloture) {
+    els.btnCloture.addEventListener("click", clotureAndExport);
+}
+
+if (els.btnEmailPv) {
+    els.btnEmailPv.addEventListener("click", () => {
+        const bureau = currentBureau();
+        if (!bureau) return;
+        KasoftStore.openPvEmail(state, currentBureauId());
+    });
+}
+
+if (els.btnSendSummary) {
+    els.btnSendSummary.addEventListener("click", async () => {
+        if (window.Ui) Ui.setLoading(els.btnSendSummary, true);
+        try {
+            await KasoftStore.sendRegionalSummary(state);
+            if (window.Ui) Ui.toast(tr("cpt_summary_sent"), "success");
+        } catch (e) {
+            if (window.Ui) Ui.toast(e.message || tr("cpt_summary_fail"), "error");
+        } finally {
+            if (window.Ui) Ui.setLoading(els.btnSendSummary, false);
+        }
+    });
 }
 
 document.addEventListener("keydown", (e) => {
@@ -494,6 +606,10 @@ if (els.btnAllPvZip) {
 }
 
 function initFromUrl() {
+    if (scopedBureauId()) {
+        enforceScopedBureau();
+        return;
+    }
     const params = new URLSearchParams(window.location.search);
     const bid = params.get("bureau");
     if (bid && state.bureaux.some((b) => b.id === bid)) {
@@ -503,6 +619,7 @@ function initFromUrl() {
 
 KasoftStore.loadStateAsync().then((s) => {
     state = s;
+    enforceScopedBureau();
     initFromUrl();
     render();
 });
@@ -524,8 +641,15 @@ function startAutoSync() {
         } catch {
             /* hors-ligne */
         }
-    }, 20000);
+    }, 60000);
 }
+KasoftStore.connectRealtime((merged) => {
+    if (document.hidden || isLocked()) return;
+    if (KasoftStore.stateSignature(merged) !== KasoftStore.stateSignature(state)) {
+        state = merged;
+        render();
+    }
+});
 startAutoSync();
 document.addEventListener("kasoft:lang", () => {
     if (window.KasoftI18n) KasoftI18n.applyI18n();

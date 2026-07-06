@@ -13,11 +13,20 @@
         <h2 data-i18n="cpt_setup_title">الإعداد مطلوب</h2>
         <p data-i18n="cpt_setup_intro">لبدء عدّ الأصوات، أكمل الخطوات التالية:</p>
         <ol class="setup-steps">
-            <li>أضف <strong>مكتب اقتراع</strong> (الإعدادات)</li>
-            <li>أضف <strong>حزباً</strong> و<strong>مراقباً</strong> على الأقل</li>
-            <li>عد هنا واختر المكتب وسجّل الأصوات</li>
+            {% if kasoft_is_admin %}
+            <li data-i18n-html="cpt_setup_step1">أضف <strong>مكتب اقتراع</strong> (الإعدادات)</li>
+            <li data-i18n-html="cpt_setup_step2">أضف <strong>حزباً</strong> و<strong>مراقباً</strong> على الأقل</li>
+            <li data-i18n="cpt_setup_step3">عد هنا واختر المكتب وسجّل الأصوات</li>
+            {% else %}
+            <li data-i18n="cpt_setup_mourakib_1">انتظر حتى يُكمل المسؤول إعداد المكاتب والأحزاب</li>
+            <li data-i18n="cpt_setup_mourakib_2">ثم اختر المكتب وسجّل الأصوات هنا</li>
+            {% endif %}
         </ol>
+        {% if kasoft_is_admin %}
         <a href="{{ url_for('configuration') }}" class="btn-primary" data-i18n="cpt_go_config">الذهاب إلى الإعدادات</a>
+        {% else %}
+        <p class="hint" data-i18n="cpt_setup_mourakib_hint">للإعدادات، تواصل مع مسؤول النظام.</p>
+        {% endif %}
     </div>
 
     <div id="comptage-app" class="hidden">
@@ -48,6 +57,7 @@
                 <div class="filter-field">
                     <span class="label" data-i18n="cpt_bureau">المكتب</span>
                     <select id="comptage-bureau"></select>
+                    <p id="scoped-bureau-hint" class="hint hidden" data-i18n="cpt_scoped_bureau_hint">مكتبك المعيّن عند تسجيل الدخول — لا يمكن التبديل</p>
                 </div>
                 <div class="filter-field">
                     <span class="label" data-i18n="cpt_status">الحالة</span>
@@ -80,9 +90,14 @@
                     <button type="button" id="btn-export-regional-csv" class="btn-secondary" data-i18n="cpt_report_csv">تقرير CSV</button>
                     <button type="button" id="btn-export-regional-pdf" class="btn-secondary" data-i18n="cpt_report_pdf">تقرير PDF</button>
                     <button type="button" id="btn-export-journal" class="btn-secondary" data-i18n="cpt_export_journal">تصدير السجل</button>
+                    <button type="button" id="btn-send-summary" class="btn-primary" data-i18n="cpt_send_summary">إرسال الملخص الإقليمي</button>
+                    {% if kasoft_is_admin %}
+                    <button type="button" id="btn-cloture-bureau" class="btn-primary" data-i18n="cpt_cloture">إغلاق المكتب وتصدير المحضر</button>
+                    <button type="button" id="btn-email-pv" class="btn-secondary" data-i18n="cpt_email_pv">إرسال المحضر بالبريد</button>
                     <button type="button" id="btn-export-all-pv-zip" class="btn-secondary" data-i18n="cpt_export_zip">كل المحاضر ZIP</button>
                     <button type="button" id="btn-reset-bureau-votes" class="btn-link btn-link-danger" data-i18n="cpt_reset">إعادة تعيين الأصوات</button>
                     <a href="{{ url_for('configuration') }}" class="btn-link" data-i18n="cpt_edit_config">تعديل الإعدادات</a>
+                    {% endif %}
                 </div>
                 <p id="keyboard-hint" class="hint comptage-kbd-hint" data-i18n="cpt_kbd_hint">اختصار: انقر + أو − ثم استخدم مفاتيح + و − على لوحة المفاتيح</p>
             </div>

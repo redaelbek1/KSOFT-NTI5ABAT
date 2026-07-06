@@ -24,7 +24,7 @@
 
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-512.png') }}">
 
-    <meta name="theme-color" content="#374151">
+    <meta name="theme-color" content="#185ea5">
 
     {% block head %}{% endblock %}
 
@@ -55,6 +55,7 @@
                 <button type="button" id="lang-toggle" class="lang-toggle" title="اللغة">FR</button>
 
                 {% if kasoft_authenticated %}
+                <span class="role-badge role-{{ kasoft_role }}" data-i18n="role_{{ kasoft_role }}">{% if kasoft_role == 'admin' %}مسؤول{% else %}مراقب{% endif %}</span>
                 <span id="sync-status" class="sync-badge sync-ok" data-kasoft="1" title="متصل">●</span>
                 {% endif %}
 
@@ -70,7 +71,9 @@
             <a href="{{ url_for('dashboard') }}" class="nav-link{% if active == 'dashboard' %} active{% endif %}" data-i18n="nav_dashboard">لوحة التحكم</a>
             <a href="{{ url_for('export_results') }}" class="nav-link{% if active == 'export' %} active{% endif %}" data-i18n="nav_export">استخراج النتائج الرسمية</a>
             <a href="{{ url_for('comptage') }}" class="nav-link{% if active == 'comptage' %} active{% endif %}" data-i18n="nav_comptage">عدّ الأصوات</a>
+            {% if kasoft_is_admin %}
             <a href="{{ url_for('configuration') }}" class="nav-link{% if active == 'config' %} active{% endif %}" data-i18n="nav_config">الإعدادات</a>
+            {% endif %}
             <a href="{{ url_for('logout') }}" class="nav-link nav-logout" data-i18n="nav_logout">خروج</a>
             {% else %}
             <a href="{{ url_for('export_results') }}" class="nav-link{% if active == 'export' %} active{% endif %}" data-i18n="nav_export">استخراج النتائج الرسمية</a>
@@ -106,6 +109,12 @@
     <script src="{{ url_for('static', filename='ui.js') }}?v={{ asset_version }}"></script>
 
     {% block scripts %}{% endblock %}
+    {% if kasoft_authenticated %}
+    <script>
+    window.KASOFT_ROLE = "{{ kasoft_role }}";
+    window.KASOFT_SCOPED_BUREAU_ID = {{ kasoft_bureau_id|tojson }};
+    </script>
+    {% endif %}
 
 </body>
 

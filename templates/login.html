@@ -1,34 +1,42 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="login_title">تسجيل الدخول — كاسوفت</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
-    <meta name="theme-color" content="#374151">
-</head>
-<body class="login-page">
-    <div class="login-card">
-        <span class="kasoft-logo">كاسوفت</span>
-        <h1 data-i18n="login_heading">تسجيل الدخول</h1>
-        <p class="hint login-subtitle" data-i18n="login_subtitle">نظام إدارة الانتخابات — الوصول للعدّ والإعدادات</p>
-        {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
-        <form method="post">
-            {% if request.args.get('next') %}
-            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
-            {% endif %}
-            <label for="pin" data-i18n="login_pin_label">رمز الدخول</label>
-            <input type="password" id="pin" name="pin" class="config-input num" lang="en-US" required autofocus inputmode="numeric" autocomplete="current-password">
-            <button type="submit" class="btn-primary login-btn" data-i18n="login_btn">دخول</button>
-        </form>
-        <a href="{{ url_for('export_results') }}" class="btn-link" data-i18n="login_export_link">استخراج النتائج الرسمية (بدون دخول)</a>
-        <p class="hint login-lang-hint">
-            <button type="button" id="lang-toggle" class="lang-toggle lang-toggle-login" title="اللغة">FR</button>
-        </p>
-    </div>
-    <script src="{{ url_for('static', filename='i18n.js') }}?v={{ asset_version }}"></script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="login_title">تسجيل الدخول — كاسوفت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <meta name="theme-color" content="#185ea5">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <span class="kasoft-logo">كاسوفت</span>
+        <h1 data-i18n="login_heading">تسجيل الدخول</h1>
+        <p class="hint login-subtitle" data-i18n="login_subtitle">نظام إدارة الانتخابات — مسؤول أو مراقب</p>
+        <p class="hint login-roles-hint" data-i18n="login_roles_hint">مسؤول: الإعدادات + كل الوحدات — مراقب: اختر المكتب + رمز المكتب (أو 3030)</p>
+        {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
+        <form method="post">
+            {% if request.args.get('next') %}
+            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+            {% endif %}
+            <label for="bureau_id" data-i18n="login_bureau_label">مكتب الاقتراع (للمراقب)</label>
+            <select id="bureau_id" name="bureau_id" class="config-input">
+                <option value="" data-i18n="login_bureau_any">— مسؤول / كل المكاتب —</option>
+                {% for b in bureaux or [] %}
+                <option value="{{ b.id }}"{% if selected_bureau_id == b.id %} selected{% endif %}>{{ b.name }}{% if b.code %} ({{ b.code }}){% endif %}</option>
+                {% endfor %}
+            </select>
+            <label for="pin" data-i18n="login_pin_label">رمز الدخول</label>
+            <input type="password" id="pin" name="pin" class="config-input num" lang="en-US" required autofocus inputmode="numeric" autocomplete="current-password">
+            <button type="submit" class="btn-primary login-btn" data-i18n="login_btn">دخول</button>
+        </form>
+        <a href="{{ url_for('export_results') }}" class="btn-link" data-i18n="login_export_link">استخراج النتائج الرسمية (بدون دخول)</a>
+        <p class="hint login-lang-hint">
+            <button type="button" id="lang-toggle" class="lang-toggle lang-toggle-login" title="اللغة">FR</button>
+        </p>
+    </div>
+    <script src="{{ url_for('static', filename='i18n.js') }}?v={{ asset_version }}"></script>
+</body>
+</html>

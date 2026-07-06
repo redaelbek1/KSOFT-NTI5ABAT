@@ -17,6 +17,7 @@ def demo_state():
                 "inscrits": 450,
                 "capacite": 500,
                 "status": "ouvert",
+                "pin": "0001",
             },
             {
                 "id": "demo-b2",
@@ -29,6 +30,7 @@ def demo_state():
                 "inscrits": 380,
                 "capacite": 400,
                 "status": "attente",
+                "pin": "0014",
             },
         ],
         "partis": [

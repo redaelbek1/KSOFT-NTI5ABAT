@@ -4,6 +4,21 @@ function tr(key) {
     return window.KasoftI18n?.t(key) || key;
 }
 
+const isAdmin = () => (window.KASOFT_ROLE || "admin") === "admin";
+
+function scopedBureauId() {
+    return window.KASOFT_SCOPED_BUREAU_ID || null;
+}
+
+function stateForView() {
+    const sid = scopedBureauId();
+    if (!sid) return state;
+    const bureaux = state.bureaux.filter((b) => b.id === sid);
+    const votes = state.votes?.[sid] ? { [sid]: state.votes[sid] } : {};
+    const pv = state.pv?.[sid] ? { [sid]: state.pv[sid] } : {};
+    return { ...state, bureaux, votes, pv };
+}
+
 function statusOptionsHtml() {
     const labelFn = window.KasoftI18n?.statusLabel
         ? (k) => KasoftI18n.statusLabel(k)
@@ -37,11 +52,13 @@ const els = {
     editCapacite: document.getElementById("edit-bureau-capacite"),
     editStatus: document.getElementById("edit-bureau-status"),
     btnRapportPdf: document.getElementById("btn-dash-rapport-pdf"),
+    btnSendSummary: document.getElementById("btn-dash-send-summary"),
     btnRapportCsv: document.getElementById("btn-dash-rapport-csv"),
     btnAllPvZip: document.getElementById("btn-dash-all-pv-zip"),
 };
 
 function fillRegionSelect(select) {
+    if (!select) return;
     const allLabel = tr("dash_all_regions");
     select.innerHTML =
         `<option value="">${allLabel}</option>` +
@@ -49,6 +66,7 @@ function fillRegionSelect(select) {
 }
 
 function fillStatusSelect(select, includeAll) {
+    if (!select) return;
     const opts = statusOptionsHtml();
     select.innerHTML = includeAll
         ? `<option value="">${tr("dash_all_status")}</option>${opts}`
@@ -60,7 +78,7 @@ function filteredBureaux() {
     const st = els.filterStatus.value;
     const rg = els.filterRegion.value;
 
-    return state.bureaux.filter((b) => {
+    return stateForView().bureaux.filter((b) => {
         if (st && b.status !== st) return false;
         if (rg && b.region !== rg) return false;
         if (!q) return true;
@@ -70,7 +88,7 @@ function filteredBureaux() {
 }
 
 function renderKpis() {
-    const s = KasoftStore.getDashboardStats(state);
+    const s = KasoftStore.getDashboardStats(stateForView());
     els.kpiBureaux.textContent = s.totalBureaux;
     els.kpiOuverts.textContent = s.ouverts;
     if (els.kpiFermes) els.kpiFermes.textContent = s.fermes;
@@ -97,16 +115,24 @@ function renderTable() {
                     return `<option value="${k}"${b.status === k ? " selected" : ""}>${lbl}</option>`;
                 })
                 .join("");
+            const statusCell = isAdmin()
+                ? `<select class="dash-status-select config-input config-input-sm" data-status="${b.id}" aria-label="${tr("dash_th_status")}">
+                        ${statusOpts}
+                    </select>`
+                : `<span class="status-badge ${KasoftStore.BUREAU_STATUSES[b.status]?.class || ""}">${stLabel}</span>`;
+            const adminActions = isAdmin()
+                ? `<button type="button" class="btn-link" data-edit="${b.id}">${tr("dash_edit")}</button>
+                    <button type="button" class="btn-link" data-dup="${b.id}">${tr("dash_dup")}</button>`
+                : "";
+            const delBtn = isAdmin()
+                ? `<button type="button" class="btn-link btn-link-danger" data-del="${b.id}">${tr("dash_del")}</button>`
+                : "";
             return `
             <tr>
                 <td>${b.name}${b.code ? ` <span class="hint num" lang="en-US" dir="ltr">[${b.code}]</span>` : ""}</td>
                 <td>${b.ville}</td>
                 <td>${b.region}</td>
-                <td>
-                    <select class="dash-status-select config-input config-input-sm" data-status="${b.id}" aria-label="${tr("dash_th_status")}">
-                        ${statusOpts}
-                    </select>
-                </td>
+                <td>${statusCell}</td>
                 <td class="num" lang="en-US">${b.inscrits}</td>
                 <td class="num" lang="en-US">${part.valid}</td>
                 <td class="num" lang="en-US">${part.votants}</td>
@@ -117,11 +143,10 @@ function renderTable() {
                     </div>
                 </td>
                 <td class="dash-actions">
-                    <button type="button" class="btn-link" data-edit="${b.id}">${tr("dash_edit")}</button>
-                    <button type="button" class="btn-link" data-dup="${b.id}">${tr("dash_dup")}</button>
+                    ${adminActions}
                     <button type="button" class="btn-link" data-pdf="${b.id}">PDF</button>
                     <a href="/comptage?bureau=${b.id}" class="btn-link">${tr("dash_count")}</a>
-                    <button type="button" class="btn-link btn-link-danger" data-del="${b.id}">${tr("dash_del")}</button>
+                    ${delBtn}
                 </td>
             </tr>`;
         })
@@ -129,6 +154,7 @@ function renderTable() {
 }
 
 function openEditModal(id) {
+    if (!els.modal) return;
     const b = state.bureaux.find((x) => x.id === id);
     if (!b) return;
     els.editId.value = b.id;
@@ -147,6 +173,11 @@ function openEditModal(id) {
 function renderMap() {
     const mapEl = document.getElementById("morocco-map");
     if (!mapEl) return;
+    if (scopedBureauId()) {
+        mapEl.closest(".card")?.classList.add("hidden");
+        return;
+    }
+    mapEl.closest(".card")?.classList.remove("hidden");
     mapEl.innerHTML = KasoftStore.MOROCCO_REGIONS.map((region) => {
         const stats = KasoftStore.getRegionStats(state, region);
         const active = els.filterRegion.value === region ? " map-region-active" : "";
@@ -165,7 +196,7 @@ function renderMap() {
 function renderPartiRank() {
     const el = document.getElementById("dash-parti-rank");
     if (!el) return;
-    const totals = KasoftStore.getPartiRanking(state);
+    const totals = KasoftStore.getPartiRanking(stateForView());
     const max = totals[0]?.total || 1;
     el.innerHTML =
         totals
@@ -252,7 +283,7 @@ els.body.addEventListener("click", (e) => {
     }
 });
 
-document.getElementById("btn-save-bureau-edit").addEventListener("click", () => {
+document.getElementById("btn-save-bureau-edit")?.addEventListener("click", () => {
     const id = els.editId.value;
     const b = state.bureaux.find((x) => x.id === id);
     if (!b) return;
@@ -269,16 +300,16 @@ document.getElementById("btn-save-bureau-edit").addEventListener("click", () => 
         status: els.editStatus.value,
     }));
     KasoftStore.saveState(state);
-    els.modal.classList.add("hidden");
+    els.modal?.classList.add("hidden");
     render();
     if (window.Ui) Ui.toast("تم تحديث المكتب", "success");
 });
 
-document.getElementById("btn-cancel-bureau-edit").addEventListener("click", () => {
-    els.modal.classList.add("hidden");
+document.getElementById("btn-cancel-bureau-edit")?.addEventListener("click", () => {
+    els.modal?.classList.add("hidden");
 });
 
-els.modal.addEventListener("click", (e) => {
+els.modal?.addEventListener("click", (e) => {
     if (e.target === els.modal) els.modal.classList.add("hidden");
 });
 
@@ -294,6 +325,20 @@ if (els.btnRapportPdf) {
             if (window.Ui) Ui.toast(e.message, "error");
         } finally {
             if (window.Ui) Ui.setLoading(els.btnRapportPdf, false);
+        }
+    });
+}
+
+if (els.btnSendSummary) {
+    els.btnSendSummary.addEventListener("click", async () => {
+        if (window.Ui) Ui.setLoading(els.btnSendSummary, true);
+        try {
+            await KasoftStore.sendRegionalSummary(state);
+            if (window.Ui) Ui.toast(tr("cpt_summary_sent"), "success");
+        } catch (e) {
+            if (window.Ui) Ui.toast(e.message || tr("cpt_summary_fail"), "error");
+        } finally {
+            if (window.Ui) Ui.setLoading(els.btnSendSummary, false);
         }
     });
 }
@@ -325,22 +370,34 @@ if (els.btnAllPvZip) {
 }
 
 fillRegionSelect(els.filterRegion);
-fillRegionSelect(els.editRegion);
+if (isAdmin()) {
+    fillRegionSelect(els.editRegion);
+    fillStatusSelect(els.editStatus, false);
+}
 fillStatusSelect(els.filterStatus, true);
-fillStatusSelect(els.editStatus, false);
 
 document.addEventListener("kasoft:lang", () => {
     if (window.KasoftI18n) KasoftI18n.applyI18n();
     fillRegionSelect(els.filterRegion);
-    fillRegionSelect(els.editRegion);
+    if (isAdmin()) {
+        fillRegionSelect(els.editRegion);
+        fillStatusSelect(els.editStatus, false);
+    }
     fillStatusSelect(els.filterStatus, true);
-    fillStatusSelect(els.editStatus, false);
     render();
 });
 
 KasoftStore.loadStateAsync().then((s) => {
     state = s;
     render();
+});
+
+KasoftStore.connectRealtime((merged) => {
+    if (document.hidden) return;
+    if (KasoftStore.stateSignature(merged) !== KasoftStore.stateSignature(state)) {
+        state = merged;
+        render();
+    }
 });
 
 setInterval(async () => {

@@ -1,8 +1,8 @@
 const STORAGE_KEY = "kasoft_electoral_v2";
 const PARTY_COLORS = [
-    "#1565c0", "#c62828", "#2e7d32", "#6a1b9a",
-    "#ef6c00", "#00838f", "#ad1457", "#4527a0",
-    "#558b2f", "#283593",
+    "#f9a825", "#43a047", "#e53935", "#8e24aa",
+    "#1565c0", "#00838f", "#c62828", "#4527a0",
+    "#2e7d32", "#ef6c00",
 ];
 
 const BUREAU_STATUSES = {
@@ -42,6 +42,7 @@ function normalizeBureau(b) {
         code: b.code || "",
         centre: b.centre || "",
         adresse: b.adresse || "",
+        pin: b.pin || "",
     };
 }
 
@@ -114,7 +115,24 @@ function mergeBureau(local, remote) {
     return normalizeBureau(merged);
 }
 
-function mergeVotes(localVotes, remoteVotes) {
+function journalLatestMs(journal) {
+    if (!Array.isArray(journal) || !journal.length) return 0;
+    return journal.reduce((max, entry) => {
+        const t = entry?.time ? new Date(entry.time).getTime() : 0;
+        return t > max ? t : max;
+    }, 0);
+}
+
+function cloneVotes(votes) {
+    return JSON.parse(JSON.stringify(votes || {}));
+}
+
+function mergeVotes(localVotes, remoteVotes, localJournal, remoteJournal) {
+    const localT = journalLatestMs(localJournal);
+    const remoteT = journalLatestMs(remoteJournal);
+    if (remoteT > localT) return cloneVotes(remoteVotes);
+    if (localT > remoteT) return cloneVotes(localVotes);
+
     const merged = {};
     const bureauIds = new Set([
         ...Object.keys(localVotes || {}),
@@ -131,7 +149,15 @@ function mergeVotes(localVotes, remoteVotes) {
             merged[bid][pid] = {};
             const mourakibIds = new Set([...Object.keys(localP), ...Object.keys(remoteP)]);
             mourakibIds.forEach((mid) => {
-                merged[bid][pid][mid] = maxInt(localP[mid], remoteP[mid]);
+                const rv = remoteP[mid];
+                const lv = localP[mid];
+                if (remoteT >= localT && rv !== undefined) {
+                    merged[bid][pid][mid] = parseInt(rv, 10) || 0;
+                } else if (lv !== undefined) {
+                    merged[bid][pid][mid] = parseInt(lv, 10) || 0;
+                } else {
+                    merged[bid][pid][mid] = maxInt(lv, rv);
+                }
             });
         });
     });
@@ -229,7 +255,7 @@ function mergeStates(local, remote) {
         bureaux,
         partis: mergePartis(local.partis, remote.partis),
         mourakibs: mergeMourakibs(local.mourakibs, remote.mourakibs),
-        votes: mergeVotes(local.votes, remote.votes),
+        votes: mergeVotes(local.votes, remote.votes, local.journal, remote.journal),
         pv: mergePv(local.pv, remote.pv),
         journal: mergeJournal(local.journal, remote.journal),
         currentBureau: local.currentBureau || remote.currentBureau || "",
@@ -263,10 +289,83 @@ async function postVoteDelta(bureauId, partiId, mourakibId, delta, actif) {
     return data;
 }
 
-function applyServerState(local, serverState) {
-    const merged = mergeStates(local, migrateState(serverState));
+function applyServerState(local, serverState, options = {}) {
+    const server = migrateState(serverState);
+    let merged = mergeStates(local, server);
+    if (options.authoritativeVotes && server.votes) {
+        merged = migrateState({ ...merged, votes: cloneVotes(server.votes) });
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     return merged;
+}
+
+async function fetchApiToken() {
+    try {
+        const res = await fetch("/api/kasoft/session", { credentials: "same-origin" });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.token || null;
+    } catch {
+        return null;
+    }
+}
+
+let realtimeWs = null;
+let realtimeHandler = null;
+let realtimeReconnectTimer = null;
+
+function connectRealtime(onState) {
+    realtimeHandler = onState;
+    if (realtimeWs && realtimeWs.readyState <= WebSocket.OPEN) return;
+
+    fetchApiToken().then((token) => {
+        if (!token) return;
+        const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const url = `${proto}//${window.location.host}/ws/sync?token=${encodeURIComponent(token)}`;
+        const ws = new WebSocket(url);
+        realtimeWs = ws;
+        ws.onmessage = (ev) => {
+            try {
+                const msg = JSON.parse(ev.data);
+                if (msg.type === "state" && msg.state && realtimeHandler) {
+                    const local = loadState();
+                    const merged = mergeStates(local, migrateState(msg.state));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    realtimeHandler(merged);
+                }
+            } catch {
+                /* ignore */
+            }
+        };
+        ws.onclose = () => {
+            if (realtimeWs === ws) realtimeWs = null;
+            if (realtimeReconnectTimer) clearTimeout(realtimeReconnectTimer);
+            realtimeReconnectTimer = setTimeout(() => connectRealtime(realtimeHandler), 5000);
+        };
+        ws.onerror = () => {
+            try {
+                ws.close();
+            } catch {
+                /* ignore */
+            }
+        };
+    });
+}
+
+function disconnectRealtime() {
+    if (realtimeReconnectTimer) {
+        clearTimeout(realtimeReconnectTimer);
+        realtimeReconnectTimer = null;
+    }
+    if (realtimeWs) {
+        try {
+            realtimeWs.close();
+        } catch {
+            /* ignore */
+        }
+        realtimeWs = null;
+    }
+    realtimeHandler = null;
 }
 
 async function fetchRemoteState() {
@@ -313,6 +412,8 @@ function syncToServer(state) {
         .then((res) => {
             if (res.status === 401 && window.Ui) {
                 Ui.toast("انتهت الجلسة — سجّل الدخول مجدداً.", "error");
+            } else if (res.status === 403 && window.Ui) {
+                Ui.toast("غير مصرح — الإعدادات للمسؤول فقط.", "error");
             } else if (!res.ok && window.Ui) {
                 Ui.toast("تعذّر حفظ البيانات على الخادم.", "error");
             }
@@ -503,10 +604,48 @@ function addJournalEntry(state, entry) {
     if (state.journal.length > 50) state.journal.length = 50;
 }
 
+function formatDateTime() {
+    const d = new Date();
+    const date = d.toLocaleDateString("en-US");
+    const time = d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+    return `${date} ${time}`;
+}
+
+function buildVerifyPv(state, bureauId) {
+    const pvNum = ensurePvNumber(state, bureauId);
+    const valid = getBureauTotal(state, bureauId);
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    return `KASOFT|${pvNum}|${bureauId}|${valid}|${stamp}`;
+}
+
+function buildVerifyRapport(state) {
+    const valid = state.bureaux.reduce((s, b) => s + getBureauTotal(state, b.id), 0);
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    return `KASOFT|RAPPORT|${valid}|${stamp}`;
+}
+
+function signatureLines(declaration) {
+    return [
+        "",
+        "── التحقق والتوقيعات ──",
+        declaration,
+        "",
+        "التوقيع — رئيس مكتب الاقتراع: _______________________",
+        "التوقيع — ممثل السلطة الإشرافية: _______________________",
+        "التوقيع — ممثل الأحزاب / المراقبون: _______________________",
+    ];
+}
+
 function buildJournalLines(state, bureauId) {
     const bureau = bureauId ? state.bureaux.find((b) => b.id === bureauId) : null;
     const entries = bureauId
-        ? state.journal.filter((j) => j.bureauId === bureauId || !j.bureauId)
+        ? state.journal.filter((j) => j.bureauId === bureauId)
         : state.journal;
     const lines = [
         "═══════════════════════════════════════",
@@ -514,21 +653,24 @@ function buildJournalLines(state, bureauId) {
         "═══════════════════════════════════════",
     ];
     if (bureau) {
+        const pvNum = ensurePvNumber(state, bureauId);
         lines.push(`المكتب: ${bureau.name}`);
+        lines.push(`رمز المكتب: ${bureau.code || "—"}`);
+        lines.push(`رقم المحضر: ${pvNum}`);
         lines.push(`المدينة: ${bureau.ville} — ${bureau.region}`);
     }
-    lines.push(`التاريخ: ${formatDate()}`);
+    lines.push(`التاريخ: ${formatDateTime()}`);
     lines.push(`عدد الإجراءات: ${entries.length}`);
     lines.push("");
     lines.push("الوقت | المراقب النشط | الحزب | المراقب | الإجراء | المجموع");
-    lines.push("─".repeat(60));
-    entries.forEach((j) => {
+    lines.push("─".repeat(72));
+    entries.slice(0, 50).forEach((j) => {
         lines.push(
             `${formatTime(j.time)} | ${j.actif} | ${j.parti} | ${j.mourakib} | ${j.action} | ${j.total}`
         );
     });
     lines.push("");
-    lines.push("كاسوفت للمعلومية والاستشارات — سري وموثوق");
+    lines.push("كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق");
     return lines;
 }
 
@@ -537,10 +679,11 @@ function buildBureauPVLines(state, bureauId) {
     if (!bureau) return [];
     const part = getParticipation(state, bureauId);
     const pvNum = ensurePvNumber(state, bureauId);
+    const verify = buildVerifyPv(state, bureauId);
 
     const lines = [
         "═══════════════════════════════════════",
-        "        محضر مكتب الاقتراع — كاسوفت",
+        "   محضر مكتب الاقتراع — نسخة رسمية (v1)",
         "═══════════════════════════════════════",
         `رقم المحضر: ${pvNum}`,
         `رمز المكتب: ${bureau.code || "—"}`,
@@ -557,37 +700,56 @@ function buildBureauPVLines(state, bureauId) {
         `الأوراق البيضاء: ${part.blancs}`,
         `الأصوات الملغاة: ${part.nuls}`,
         `نسبة المشاركة: ${part.pct}%`,
-        `التاريخ: ${formatDate()}`,
+        `التاريخ والوقت: ${formatDateTime()}`,
         "",
-        "── توزيع الأصوات حسب الأحزاب ──",
+        "── توزيع الأصوات حسب الحزب ──",
         "",
     ];
 
     state.partis.forEach((p) => {
         const total = getPartiTotal(state, bureauId, p.id);
         lines.push(`${p.name}: ${total} صوت`);
-        (state.mourakibs[p.id] || []).forEach((m) => {
-            const c = getMourakibCount(state, bureauId, p.id, m.id);
-            if (c > 0) lines.push(`  • ${m.name}: ${c}`);
-        });
+        const details = (state.mourakibs[p.id] || [])
+            .map((m) => {
+                const c = getMourakibCount(state, bureauId, p.id, m.id);
+                return c > 0 ? `${m.name}: ${c}` : null;
+            })
+            .filter(Boolean);
+        if (details.length) lines.push(`  تفصيل المراقبين: ${details.join("، ")}`);
         lines.push("");
     });
 
     lines.push(`المجموع العام: ${part.valid} صوت صحيح`);
     lines.push("");
-    lines.push("── آخر العمليات ──");
-    state.journal.slice(0, 10).forEach((j) => {
-        lines.push(
-            `${formatTime(j.time)} | ${j.actif} | ${j.parti} | ${j.action} → ${j.total}`
-        );
-    });
+    lines.push("── آخر العمليات (10) ──");
+    const journal = state.journal.filter((j) => j.bureauId === bureauId).slice(0, 10);
+    if (journal.length) {
+        journal.forEach((j) => {
+            lines.push(
+                `${formatTime(j.time)} | ${j.actif} | ${j.parti} | ${j.action} → ${j.total}`
+            );
+        });
+    } else {
+        lines.push("— لا توجد عمليات —");
+    }
+    lines.push(...signatureLines("تصريح: أؤكد أن هذا المحضر مطابق لنتائج الفرز داخل المكتب المذكور."));
+    lines.push(`رمز التحقق: ${verify}`);
     lines.push("");
-    lines.push("كاسوفت للمعلومية والاستشارات — سري وموثوق");
+    lines.push("كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق");
     return lines;
 }
 
 function buildRegionalReportLines(state) {
     const stats = getDashboardStats(state);
+    const totalBlancs = state.bureaux.reduce(
+        (s, b) => s + getParticipation(state, b.id).blancs,
+        0
+    );
+    const totalNuls = state.bureaux.reduce(
+        (s, b) => s + getParticipation(state, b.id).nuls,
+        0
+    );
+    const verify = buildVerifyRapport(state);
     const lines = [
         "═══════════════════════════════════════",
         "     التقرير الإقليمي الموحد — كاسوفت",
@@ -595,29 +757,29 @@ function buildRegionalReportLines(state) {
         `التاريخ: ${formatDate()}`,
         `عدد المكاتب: ${stats.totalBureaux}`,
         `المكاتب المفتوحة: ${stats.ouverts}`,
+        `المكاتب المغلقة: ${stats.fermes}`,
         `مجموع المسجلين: ${stats.totalInscrits}`,
-        `مجموع الأصوات الصحيحة: ${stats.totalVotes}`,
         `مجموع المصوتين: ${stats.totalVotants}`,
+        `مجموع الأصوات الصحيحة: ${stats.totalVotes}`,
+        `مجموع الأوراق البيضاء: ${totalBlancs}`,
+        `مجموع الأصوات الملغاة: ${totalNuls}`,
         `نسبة المشاركة العامة: ${stats.participation}%`,
         "",
         "── تفصيل حسب المكتب ──",
         "",
+        "المكتب | المدينة | الحالة | مسجلون | مصوتون | صحيحة | بيضاء | ملغاة | %",
+        "─".repeat(72),
     ];
 
     state.bureaux.forEach((b) => {
         const part = getParticipation(state, b.id);
-        lines.push(`▸ ${b.name} (${b.ville} — ${b.region})`);
+        const st = BUREAU_STATUSES[b.status].label;
         lines.push(
-            `  الحالة: ${BUREAU_STATUSES[b.status].label} | مسجلون: ${b.inscrits} | مصوتون: ${part.votants} | صحيحة: ${part.valid} | مشاركة: ${part.pct}%`
+            `${b.name} | ${b.ville} | ${st} | ${b.inscrits} | ${part.votants} | ${part.valid} | ${part.blancs} | ${part.nuls} | ${part.pct}%`
         );
-        state.partis.forEach((p) => {
-            const t = getPartiTotal(state, b.id, p.id);
-            if (t > 0) lines.push(`    ${p.name}: ${t}`);
-        });
-        lines.push("");
     });
 
-    lines.push("── المجموع حسب الحزب (كل المكاتب) ──");
+    lines.push("", "── المجموع حسب الحزب (كل المكاتب) ──", "");
     state.partis.forEach((p) => {
         const total = state.bureaux.reduce(
             (s, b) => s + getPartiTotal(state, b.id, p.id),
@@ -625,8 +787,10 @@ function buildRegionalReportLines(state) {
         );
         lines.push(`${p.name}: ${total} صوت`);
     });
+    lines.push(...signatureLines("تصريح: أؤكد صحة هذا التقرير الإقليمي الموحد."));
+    lines.push(`رمز التحقق: ${verify}`);
     lines.push("");
-    lines.push("كاسوفت للمعلومية والاستشارات — سري وموثوق");
+    lines.push("كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق");
     return lines;
 }
 
@@ -775,6 +939,108 @@ async function restoreBackup(file) {
     return state;
 }
 
+function cloneState(state) {
+    return migrateState(JSON.parse(JSON.stringify(state)));
+}
+
+function statesEqual(a, b) {
+    return stateSignature(a) === stateSignature(b);
+}
+
+function cloturerBureau(state, bureauId, options = {}) {
+    const bureau = state.bureaux.find((b) => b.id === bureauId);
+    if (!bureau) return { ok: false, error: "bureau" };
+    if (bureau.status === "ferme") return { ok: true, already: true };
+
+    const check = validateBureauPV(state, bureauId);
+    if (!check.ok && !options.force) {
+        return { ok: false, validation: check };
+    }
+
+    bureau.status = "ferme";
+    ensurePvNumber(state, bureauId);
+    addJournalEntry(state, {
+        time: new Date().toISOString(),
+        bureauId,
+        actif: (state.mourakibActif || "").trim() || "—",
+        parti: "—",
+        mourakib: "—",
+        action: "إغلاق",
+        total: getBureauTotal(state, bureauId),
+    });
+    return { ok: true, check };
+}
+
+function openPvEmail(state, bureauId) {
+    const bureau = state.bureaux.find((b) => b.id === bureauId);
+    if (!bureau) return;
+    const part = getParticipation(state, bureauId);
+    const pvNum = ensurePvNumber(state, bureauId);
+    const subject = encodeURIComponent(`PV — ${bureau.name} — ${pvNum}`);
+    const body = encodeURIComponent(
+        [
+            "محضر مكتب الاقتراع — كاسوفت",
+            `رقم المحضر: ${pvNum}`,
+            `المكتب: ${bureau.name}`,
+            `المدينة: ${bureau.ville} — ${bureau.region}`,
+            `المسجلون: ${bureau.inscrits}`,
+            `المصوتون: ${part.votants}`,
+            `الأصوات الصحيحة: ${part.valid}`,
+            `البيضاء: ${part.blancs} | الملغاة: ${part.nuls}`,
+            `نسبة المشاركة: ${part.pct}%`,
+            "",
+            "يرجى إرفاق ملف المحضر (TXT/PDF) المُصدَّر من النظام.",
+        ].join("\n")
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+async function sendRegionalSummary(state) {
+    const lines = buildRegionalReportLines(state);
+    const stats = getDashboardStats(state);
+    const dateSlug = formatDate().replace(/\//g, "-");
+    const filename = `resume_regional_${dateSlug}.txt`;
+    downloadText(filename, lines);
+
+    const summaryText = [
+        "KASOFT — Résumé régional / ملخص إقليمي",
+        `Date: ${formatDate()}`,
+        `Bureaux: ${stats.totalBureaux} | Ouverts: ${stats.ouverts} | Fermés: ${stats.fermes}`,
+        `Inscrits: ${stats.totalInscrits} | Votants: ${stats.totalVotants}`,
+        `Participation: ${stats.participation}%`,
+        `Voix valides: ${stats.totalVotes}`,
+        "",
+        "Le fichier TXT détaillé a été téléchargé — veuillez le joindre à votre message.",
+    ].join("\n");
+
+    const subject = encodeURIComponent("KASOFT — Résumé régional élections");
+    const body = encodeURIComponent(summaryText);
+
+    if (navigator.share && navigator.canShare) {
+        try {
+            const file = new File([lines.join("\n")], filename, { type: "text/plain;charset=utf-8" });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: "KASOFT — Résumé régional",
+                    text: summaryText,
+                    files: [file],
+                });
+                return;
+            }
+        } catch {
+            /* fallback mailto */
+        }
+    }
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function filterJournalForBureau(state, bureauId) {
+    if (!bureauId) return (state.journal || []).slice(0, 50);
+    return (state.journal || [])
+        .filter((j) => !j.bureauId || j.bureauId === bureauId)
+        .slice(0, 50);
+}
+
 window.KasoftStore = {
     STORAGE_KEY,
     PARTY_COLORS,
@@ -784,8 +1050,12 @@ window.KasoftStore = {
     normalizeBureau,
     defaultConfig: emptyConfig,
     migrateState,
+    cloneState,
+    statesEqual,
     mergeStates,
     fetchRemoteState,
+    connectRealtime,
+    disconnectRealtime,
     postVoteDelta,
     applyServerState,
     stateSignature,
@@ -811,6 +1081,10 @@ window.KasoftStore = {
     ensurePvNumber,
     isBureauLocked,
     validateBureauPV,
+    cloturerBureau,
+    openPvEmail,
+    sendRegionalSummary,
+    filterJournalForBureau,
     addJournalEntry,
     buildBureauPVLines,
     buildJournalLines,

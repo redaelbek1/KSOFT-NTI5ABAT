@@ -16,6 +16,7 @@
                 <input type="text" id="bureau-ville" data-i18n-placeholder="ph_ville" placeholder="المدينة" class="config-input">
                 <select id="bureau-region" class="config-input"></select>
                 <input type="text" id="bureau-code" data-i18n-placeholder="ph_code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
+                <input type="password" id="bureau-pin" data-i18n-placeholder="ph_bureau_pin" placeholder="رمز دخول المكتب" class="config-input num" lang="en-US" dir="ltr" inputmode="numeric" autocomplete="off">
                 <input type="text" id="bureau-centre" data-i18n-placeholder="ph_centre" placeholder="المركز" class="config-input">
                 <input type="text" id="bureau-adresse" data-i18n-placeholder="ph_adresse" placeholder="العنوان" class="config-input">
                 <input type="number" id="bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
@@ -52,6 +53,7 @@
 
     <div class="config-actions">
         <button type="button" id="btn-save-config" class="btn-primary" data-i18n="cfg_save">حفظ الإعدادات</button>
+        <button type="button" id="btn-cancel-config" class="btn-secondary hidden" data-i18n="cfg_cancel">إلغاء التغييرات</button>
         <button type="button" id="btn-sync-server" class="btn-secondary" data-i18n="cfg_sync">مزامنة مع الخادم</button>
         <button type="button" id="btn-load-demo" class="btn-secondary" data-i18n="cfg_demo">تحميل بيانات تجريبية</button>
         <button type="button" id="btn-export-backup" class="btn-secondary" data-i18n="cfg_backup">تنزيل نسخة احتياطية</button>
@@ -91,6 +93,7 @@
             <input type="text" id="edit-bureau-ville" data-i18n-placeholder="ph_ville" placeholder="المدينة" class="config-input">
             <select id="edit-bureau-region" class="config-input"></select>
             <input type="text" id="edit-bureau-code" data-i18n-placeholder="ph_code" placeholder="رمز/كود المكتب" class="config-input num" lang="en-US" dir="ltr">
+            <input type="password" id="edit-bureau-pin" data-i18n-placeholder="ph_bureau_pin" placeholder="رمز دخول المكتب" class="config-input num" lang="en-US" dir="ltr" inputmode="numeric" autocomplete="off">
             <input type="text" id="edit-bureau-centre" data-i18n-placeholder="ph_centre" placeholder="المركز" class="config-input">
             <input type="text" id="edit-bureau-adresse" data-i18n-placeholder="ph_adresse" placeholder="العنوان" class="config-input">
             <input type="number" id="edit-bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">

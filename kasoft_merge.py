@@ -35,7 +35,33 @@ def _merge_bureau(local, remote):
     return merged
 
 
-def _merge_votes(local_votes, remote_votes):
+def _journal_latest_ms(journal):
+    latest = 0.0
+    for entry in journal or []:
+        if not isinstance(entry, dict) or not entry.get("time"):
+            continue
+        try:
+            from datetime import datetime
+
+            t = datetime.fromisoformat(entry["time"]).timestamp()
+            latest = max(latest, t)
+        except (TypeError, ValueError):
+            continue
+    return latest
+
+
+def _merge_votes(local_votes, remote_votes, local_journal=None, remote_journal=None):
+    local_t = _journal_latest_ms(local_journal)
+    remote_t = _journal_latest_ms(remote_journal)
+    if remote_t > local_t:
+        import copy
+
+        return copy.deepcopy(remote_votes or {})
+    if local_t > remote_t:
+        import copy
+
+        return copy.deepcopy(local_votes or {})
+
     merged = {}
     bureau_ids = set(local_votes or {}) | set(remote_votes or {})
     for bid in bureau_ids:
@@ -49,7 +75,14 @@ def _merge_votes(local_votes, remote_votes):
             merged[bid][pid] = {}
             mourakib_ids = set(local_p) | set(remote_p)
             for mid in mourakib_ids:
-                merged[bid][pid][mid] = _max_int(local_p.get(mid), remote_p.get(mid))
+                rv = remote_p.get(mid)
+                lv = local_p.get(mid)
+                if remote_t >= local_t and rv is not None:
+                    merged[bid][pid][mid] = _max_int(rv, 0)
+                elif lv is not None:
+                    merged[bid][pid][mid] = _max_int(lv, 0)
+                else:
+                    merged[bid][pid][mid] = _max_int(lv, rv)
     return merged
 
 
@@ -139,7 +172,12 @@ def merge_kasoft_states(local, remote):
         "bureaux": bureaux,
         "partis": _merge_partis(local.get("partis"), remote.get("partis")),
         "mourakibs": _merge_mourakibs(local.get("mourakibs"), remote.get("mourakibs")),
-        "votes": _merge_votes(local.get("votes"), remote.get("votes")),
+        "votes": _merge_votes(
+            local.get("votes"),
+            remote.get("votes"),
+            local.get("journal"),
+            remote.get("journal"),
+        ),
         "pv": _merge_pv(local.get("pv"), remote.get("pv")),
         "journal": _merge_journal(local.get("journal"), remote.get("journal")),
         "currentBureau": local.get("currentBureau") or remote.get("currentBureau") or "",
