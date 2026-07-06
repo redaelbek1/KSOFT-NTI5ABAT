@@ -3,8 +3,10 @@ import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "data" / "kasoft.db"
-JSON_PATH = Path(__file__).parent / "data" / "kasoft_state.json"
+from kasoft.paths import DATA_DIR
+
+DB_PATH = DATA_DIR / "kasoft.db"
+JSON_PATH = DATA_DIR / "kasoft_state.json"
 _db_ready = False
 _pg_engine = None
 
@@ -143,7 +145,7 @@ def save_state(data):
     JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
     JSON_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     try:
-        from backend.broadcast import notify_state_change
+        from kasoft.api.broadcast import notify_state_change
 
         notify_state_change(data)
     except ImportError:

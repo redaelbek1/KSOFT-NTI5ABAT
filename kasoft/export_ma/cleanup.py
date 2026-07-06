@@ -1,7 +1,6 @@
 import time
-from pathlib import Path
 
-OUTPUT_DIR = Path(__file__).parent / "output"
+from kasoft.paths import OUTPUT_DIR
 DEFAULT_MAX_AGE_DAYS = 7
 
 

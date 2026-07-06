@@ -9,10 +9,10 @@ os.environ.setdefault("KASOFT_ADMIN_PIN", "2026")
 os.environ.setdefault("KASOFT_MOURAKIB_PIN", "3030")
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
-import kasoft_db as db  # noqa: E402
+import kasoft.core.db as db  # noqa: E402
 from app import app  # noqa: E402
-from kasoft_pdf import generate_pv_pdf, generate_rapport_pdf  # noqa: E402
-from kasoft_seed import demo_state  # noqa: E402
+from kasoft.core.pdf import generate_pv_pdf, generate_rapport_pdf  # noqa: E402
+from kasoft.core.seed import demo_state  # noqa: E402
 
 
 class KasoftAppTests(unittest.TestCase):
@@ -74,7 +74,7 @@ class KasoftAppTests(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
 
     def test_bureau_pin_from_code_rb001(self):
-        from kasoft_auth import _default_bureau_pin
+        from kasoft.core.auth import _default_bureau_pin
 
         bureau = {"id": "demo-b1", "code": "RB-001", "pin": ""}
         self.assertEqual(_default_bureau_pin(bureau), "0001")
@@ -202,7 +202,7 @@ class KasoftAppTests(unittest.TestCase):
         self.assertEqual(state["votes"][bid][pid][mid], before)
 
     def test_merge_votes_subtract_uses_newer_journal(self):
-        from kasoft_merge import merge_kasoft_states
+        from kasoft.core.merge import merge_kasoft_states
 
         local = {
             "bureaux": [],

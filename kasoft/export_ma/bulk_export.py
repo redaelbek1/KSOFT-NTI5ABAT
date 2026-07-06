@@ -4,16 +4,16 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
-from api_client import fetch_voix
-from config import ELECTIONS, REGIONS
-from geo_service import (
+from kasoft.export_ma.api_client import fetch_voix
+from kasoft.export_ma.config import ELECTIONS, REGIONS
+from kasoft.export_ma.geo_service import (
     get_circuits_communal,
     get_circuits_legislative,
     get_communes,
     get_provinces,
 )
 
-OUTPUT_DIR = Path(__file__).parent / "output"
+from kasoft.paths import OUTPUT_DIR
 MAX_WORKERS = 16
 
 REGION_MAP = {0: "المستوى الوطني", **{r["id"]: r["name"] for r in REGIONS}}

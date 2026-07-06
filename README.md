@@ -90,12 +90,13 @@ API TXT (auth Bearer) : `GET /export/{id}/txt`, `GET /rapport/general/txt`, `GET
 ## Structure utile
 
 ```
-app.py              Routes Flask (UI)
-asgi.py             FastAPI + Flask (Phase 2)
-backend/            API Phase 2 + WebSocket
-kasoft_db.py        État SQLite / PostgreSQL
-kasoft_txt.py       Exports TXT (alignés PDF)
-kasoft_pdf.py       Génération PDF
+app.py              Entrée Flask
+asgi.py             Entrée FastAPI + Flask (Phase 2)
+kasoft/
+  core/             Auth, DB, merge, PDF, TXT, seed
+  api/              FastAPI + WebSocket
+  export_ma/        Export elections.ma
+  web/              Routes Flask (UI)
 docker-compose.yml  App + PostgreSQL local
 ```
 

@@ -30,7 +30,7 @@ def _post(service, method, payload):
 
 
 def fetch_voix(election_key, region, province, commune, circ, c_election):
-    from config import ELECTIONS
+    from kasoft.export_ma.config import ELECTIONS
 
     election = ELECTIONS[election_key]
     if election["type"] == "legislative":

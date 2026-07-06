@@ -113,7 +113,7 @@ def find_bureau_by_code(code):
 
         return None
 
-    from kasoft_db import load_state
+    from kasoft.core.db import load_state
 
 
 
@@ -135,7 +135,7 @@ def find_bureau_by_code(code):
 
 def bureau_pin_matches(bureau_id, pin):
 
-    from kasoft_db import load_state
+    from kasoft.core.db import load_state
 
 
 
@@ -154,7 +154,7 @@ def bureau_pin_matches(bureau_id, pin):
 
 def find_bureau_by_pin(pin):
     """Trouve un bureau unique si le PIN correspond (ex. 0001 pour RB-001)."""
-    from kasoft_db import load_state
+    from kasoft.core.db import load_state
 
     value = str(pin).strip()
     if not value:

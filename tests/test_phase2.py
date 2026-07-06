@@ -8,8 +8,8 @@ os.environ.setdefault("KASOFT_ADMIN_PIN", "2026")
 os.environ.setdefault("KASOFT_MOURAKIB_PIN", "3030")
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
-import kasoft_db as db  # noqa: E402
-from kasoft_seed import demo_state  # noqa: E402
+import kasoft.core.db as db  # noqa: E402
+from kasoft.core.seed import demo_state  # noqa: E402
 
 
 class Phase2ApiTests(unittest.TestCase):

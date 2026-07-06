@@ -5,10 +5,12 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-from config import ELECTIONS, REGIONS
+from kasoft.export_ma.config import ELECTIONS, REGIONS
+
+from kasoft.paths import DATA_DIR
 
 OPT_JS = """els => els.map(e => ({value: e.value, text: e.textContent.trim()}))"""
-CACHE_DIR = Path(__file__).parent / "data" / "geo_disk"
+CACHE_DIR = DATA_DIR / "geo_disk"
 WAIT_MS = 1500
 
 

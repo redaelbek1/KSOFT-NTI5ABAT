@@ -6,9 +6,9 @@ from pathlib import Path
 
 os.environ.setdefault("SECRET_KEY", "test-secret")
 
-import kasoft_db as db  # noqa: E402
-from kasoft_seed import demo_state  # noqa: E402
-from kasoft_txt import generate_journal_txt, generate_pv_txt, generate_rapport_txt  # noqa: E402
+import kasoft.core.db as db  # noqa: E402
+from kasoft.core.seed import demo_state  # noqa: E402
+from kasoft.core.txt import generate_journal_txt, generate_pv_txt, generate_rapport_txt  # noqa: E402
 
 
 class KasoftTxtTests(unittest.TestCase):

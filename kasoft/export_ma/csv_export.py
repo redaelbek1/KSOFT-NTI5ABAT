@@ -3,10 +3,10 @@ import io
 from datetime import datetime
 from pathlib import Path
 
-from api_client import ElectionsApiError, fetch_voix
-from config import ELECTIONS
+from kasoft.export_ma.api_client import ElectionsApiError, fetch_voix
+from kasoft.export_ma.config import ELECTIONS
 
-OUTPUT_DIR = Path(__file__).parent / "output"
+from kasoft.paths import OUTPUT_DIR
 
 # تشريعية — 4 colonnes comme elections.ma
 COLUMNS_LEGISLATIVE = [

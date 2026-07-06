@@ -1,7 +1,7 @@
 """Génération TXT — alignée sur les PDF KASOFT (Phase 2)."""
 from datetime import datetime
 
-from kasoft_pdf import (
+from kasoft.core.pdf import (
     _bureau_total,
     _bureau_votes,
     _pv_number,

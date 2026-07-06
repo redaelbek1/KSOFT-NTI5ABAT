@@ -8,9 +8,10 @@ import arabic_reshaper
 from bidi.algorithm import get_display
 from fpdf import FPDF
 
-from kasoft_auth import make_qr_base64
+from kasoft.core.auth import make_qr_base64
+from kasoft.paths import STATIC_DIR
 
-FONT_DIR = Path(__file__).parent / "static" / "fonts"
+FONT_DIR = STATIC_DIR / "fonts"
 _ARABIC_RE = re.compile(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]")
 _FONT_NAME = "KasoftArabic"
 _USE_HB_RTL = False

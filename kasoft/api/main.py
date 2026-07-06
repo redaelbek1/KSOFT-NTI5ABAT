@@ -6,9 +6,9 @@ from urllib.parse import quote
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 
-from backend.broadcast import register, set_event_loop, unregister
-from backend.schemas import AuthIn, AuthOut, BureauCreate, StateOut, VoteIn
-from kasoft_auth import (
+from kasoft.api.broadcast import register, set_event_loop, unregister
+from kasoft.api.schemas import AuthIn, AuthOut, BureauCreate, StateOut, VoteIn
+from kasoft.core.auth import (
     ROLE_ADMIN,
     ROLE_MOURAKIB,
     bureau_pin_matches,
@@ -17,9 +17,9 @@ from kasoft_auth import (
     resolve_login,
     validate_api_token,
 )
-from kasoft_db import load_state, record_vote, save_state, uses_postgresql
-from kasoft_pdf import generate_pv_pdf, generate_rapport_pdf
-from kasoft_txt import generate_journal_txt, generate_pv_txt, generate_rapport_txt
+from kasoft.core.db import load_state, record_vote, save_state, uses_postgresql
+from kasoft.core.pdf import generate_pv_pdf, generate_rapport_pdf
+from kasoft.core.txt import generate_journal_txt, generate_pv_txt, generate_rapport_txt
 
 router = APIRouter(tags=["kasoft-phase2"])
 
