@@ -109,8 +109,17 @@ def _ensure_page(ctx, election_key):
     page = ctx["page"]
     if ctx["election_key"] != election_key:
         election = ELECTIONS[election_key]
-        page.goto(election["page_url"], timeout=90000)
-        page.wait_for_selector("#DDLRegion")
+        try:
+            page.goto(election["page_url"], timeout=90000)
+            page.wait_for_selector("#DDLRegion", timeout=60000)
+        except Exception as exc:
+            raise RuntimeError(
+                "elections.ma غير متاح من هذا الخادم "
+                "(حجب IP سحابي أو مهلة #DDLRegion). "
+                "سخّن الكاش محلياً: python deploy/warm-geo-cache.py "
+                "ثم انسخ data/geo_disk إلى السيرفر. "
+                f"({exc.__class__.__name__})"
+            ) from exc
         ctx["election_key"] = election_key
 
 
@@ -211,6 +220,15 @@ def _cached(key, fetcher, *args):
     except RuntimeError:
         raise
     except Exception as exc:
+        msg = str(exc)
+        if "DDLRegion" in msg or "Timeout" in msg:
+            raise RuntimeError(
+                "تعذر تحميل البيانات الجغرافية من elections.ma "
+                "(الخادم السحابي محظور غالباً). "
+                "استخدم الكاش: python deploy/warm-geo-cache.py على حاسوب منزلي "
+                "ثم انسخ data/geo_disk إلى Oracle. "
+                f"تفاصيل: {exc}"
+            ) from exc
         raise RuntimeError(f"تعذر تحميل البيانات الجغرافية: {exc}") from exc
     _disk_set(key, data)
     return data
