@@ -643,10 +643,9 @@ function signatureLines(declaration) {
 }
 
 function buildJournalLines(state, bureauId) {
-    const bureau = bureauId ? state.bureaux.find((b) => b.id === bureauId) : null;
-    const entries = bureauId
-        ? state.journal.filter((j) => j.bureauId === bureauId)
-        : state.journal;
+    const allBureaux = !bureauId || bureauId === "*";
+    const bureau = !allBureaux ? state.bureaux.find((b) => b.id === bureauId) : null;
+    const entries = filterJournalForBureau(state, allBureaux ? "*" : bureauId, { limit: 200 });
     const lines = [
         "═══════════════════════════════════════",
         "           سجل العمليات — كاسوفت",
@@ -658,16 +657,28 @@ function buildJournalLines(state, bureauId) {
         lines.push(`رمز المكتب: ${bureau.code || "—"}`);
         lines.push(`رقم المحضر: ${pvNum}`);
         lines.push(`المدينة: ${bureau.ville} — ${bureau.region}`);
+    } else if (allBureaux) {
+        lines.push("النطاق: جميع مكاتب الاقتراع");
     }
     lines.push(`التاريخ: ${formatDateTime()}`);
     lines.push(`عدد الإجراءات: ${entries.length}`);
     lines.push("");
-    lines.push("الوقت | المراقب النشط | الحزب | المراقب | الإجراء | المجموع");
+    if (allBureaux) {
+        lines.push("الوقت | المكتب | المراقب النشط | الحزب | المراقب | الإجراء | المجموع");
+    } else {
+        lines.push("الوقت | المراقب النشط | الحزب | المراقب | الإجراء | المجموع");
+    }
     lines.push("─".repeat(72));
-    entries.slice(0, 50).forEach((j) => {
-        lines.push(
-            `${formatTime(j.time)} | ${j.actif} | ${j.parti} | ${j.mourakib} | ${j.action} | ${j.total}`
-        );
+    entries.forEach((j) => {
+        if (allBureaux) {
+            lines.push(
+                `${formatTime(j.time)} | ${bureauNameForJournal(state, j.bureauId)} | ${j.actif} | ${j.parti} | ${j.mourakib} | ${j.action} | ${j.total}`
+            );
+        } else {
+            lines.push(
+                `${formatTime(j.time)} | ${j.actif} | ${j.parti} | ${j.mourakib} | ${j.action} | ${j.total}`
+            );
+        }
     });
     lines.push("");
     lines.push("كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق");
@@ -1034,11 +1045,22 @@ async function sendRegionalSummary(state) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
-function filterJournalForBureau(state, bureauId) {
-    if (!bureauId) return (state.journal || []).slice(0, 50);
-    return (state.journal || [])
-        .filter((j) => !j.bureauId || j.bureauId === bureauId)
-        .slice(0, 50);
+function filterJournalForBureau(state, bureauId, options = {}) {
+    const limit = options.limit || 50;
+    const journal = state.journal || [];
+    if (!bureauId || bureauId === "*") {
+        return journal.slice(0, limit);
+    }
+    return journal
+        .filter((j) => j.bureauId === bureauId)
+        .slice(0, limit);
+}
+
+function bureauNameForJournal(state, bureauId) {
+    if (!bureauId) return "—";
+    const b = (state.bureaux || []).find((x) => x.id === bureauId);
+    if (!b) return bureauId;
+    return b.code ? `${b.name} [${b.code}]` : b.name;
 }
 
 window.KasoftStore = {
@@ -1085,6 +1107,7 @@ window.KasoftStore = {
     openPvEmail,
     sendRegionalSummary,
     filterJournalForBureau,
+    bureauNameForJournal,
     addJournalEntry,
     buildBureauPVLines,
     buildJournalLines,

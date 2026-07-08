@@ -106,12 +106,19 @@
         <section class="parti-grid" id="parti-grid"></section>
 
         <section class="card">
-            <div class="card-title" data-i18n="cpt_journal">سجل العمليات (آخر 50 إجراء)</div>
+            <div class="card-title journal-card-title">
+                <span data-i18n="cpt_journal">سجل العمليات (آخر 50 إجراء)</span>
+                <div id="journal-filter-wrap" class="journal-filter-wrap hidden">
+                    <label for="journal-filter-bureau" class="hint" data-i18n="cpt_journal_filter">تصفية حسب المكتب</label>
+                    <select id="journal-filter-bureau" class="config-input config-input-sm"></select>
+                </div>
+            </div>
             <div class="journal-wrap">
                 <table class="journal-table">
                     <thead>
                         <tr>
                             <th data-i18n="th_time">الوقت</th>
+                            <th id="th-journal-bureau" class="hidden" data-i18n="th_bureau">المكتب</th>
                             <th data-i18n="th_actif">المراقب النشط</th>
                             <th data-i18n="th_parti">الحزب</th>
                             <th data-i18n="th_mourakib">المراقب</th>

@@ -899,6 +899,26 @@ select:disabled { background: #f5f5f5; color: #999; }
 
 .journal-wrap { overflow-x: auto; padding: 0 1rem 1rem; }
 
+.journal-card-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.journal-filter-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.journal-filter-wrap .config-input-sm {
+    min-width: 220px;
+}
+
 .journal-table {
     width: 100%;
     border-collapse: collapse;

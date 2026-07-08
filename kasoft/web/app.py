@@ -50,8 +50,16 @@ app.secret_key = os.environ.get("SECRET_KEY", "kasoft-electoral-dev-key")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-if os.environ.get("FLASK_DEBUG", "0") != "1":
+# Secure cookies break login on plain HTTP (Oracle Always Free without TLS).
+# Set SESSION_COOKIE_SECURE=1 or KASOFT_HTTPS=1 only when serving over HTTPS.
+_https = os.environ.get("SESSION_COOKIE_SECURE", os.environ.get("KASOFT_HTTPS", "0")).lower() in (
+    "1",
+    "true",
+    "yes",
+)
+if _https:
     app.config["SESSION_COOKIE_SECURE"] = True
+if os.environ.get("FLASK_DEBUG", "0") != "1" or _https:
     from werkzeug.middleware.proxy_fix import ProxyFix
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
@@ -132,7 +140,7 @@ def inject_template_globals():
         "kasoft_is_admin": is_admin(),
         "kasoft_role": get_role() if is_authenticated() else None,
         "kasoft_bureau_id": get_bureau_id() if is_authenticated() else None,
-        "asset_version": os.environ.get("ASSET_VERSION", "39"),
+        "asset_version": os.environ.get("ASSET_VERSION", "40"),
     }
 
 export_state = {

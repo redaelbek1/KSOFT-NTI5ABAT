@@ -38,18 +38,24 @@ class _PlaywrightWorker:
         self._failed = False
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
+        self._error = None
         if not self._ready.wait(timeout=90):
             self._failed = True
+            self._error = "timeout démarrage Playwright"
         if self._failed:
-            raise RuntimeError(
-                "Playwright غير متاح. ثبّت المتصفح: python -m playwright install chromium"
-            )
+            raise RuntimeError(self._playwright_error())
+
+    def _playwright_error(self):
+        detail = self._error or "navigateur Chromium manquant"
+        return (
+            "Playwright غير متاح ("
+            + str(detail)
+            + "). على الخادم: playwright install chromium"
+        )
 
     def run(self, fn, *args):
         if self._failed:
-            raise RuntimeError(
-                "Playwright غير متاح. ثبّت المتصفح: python -m playwright install chromium"
-            )
+            raise RuntimeError(self._playwright_error())
         box = queue.Queue(maxsize=1)
         self._queue.put((fn, args, box))
         ok, payload = box.get(timeout=120)
@@ -75,22 +81,16 @@ class _PlaywrightWorker:
                         box.put((True, fn(ctx, *args)))
                     except Exception as exc:
                         box.put((False, exc))
-        except Exception:
+        except Exception as exc:
             self._failed = True
+            self._error = exc
             self._ready.set()
             while True:
                 job = self._queue.get()
                 if job is None:
                     break
                 _, _, box = job
-                box.put(
-                    (
-                        False,
-                        RuntimeError(
-                            "Playwright غير متاح. ثبّت المتصفح: python -m playwright install chromium"
-                        ),
-                    )
-                )
+                box.put((False, RuntimeError(self._playwright_error())))
 
 
 _worker = None

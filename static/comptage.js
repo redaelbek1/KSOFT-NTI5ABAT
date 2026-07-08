@@ -21,6 +21,9 @@ const els = {
     breakdown: document.getElementById("totals-breakdown"),
     grid: document.getElementById("parti-grid"),
     journal: document.getElementById("journal-body"),
+    journalFilterWrap: document.getElementById("journal-filter-wrap"),
+    journalFilter: document.getElementById("journal-filter-bureau"),
+    journalBureauTh: document.getElementById("th-journal-bureau"),
     btnExport: document.getElementById("btn-export-pv"),
     btnExportPdf: document.getElementById("btn-export-pv-pdf"),
     btnRegional: document.getElementById("btn-export-regional"),
@@ -299,22 +302,66 @@ function renderGrid(leaderId) {
         .join("");
 }
 
+function journalFilterId() {
+    if (!isAdmin()) return currentBureauId();
+    const v = els.journalFilter?.value;
+    if (v === undefined || v === null || v === "") return "*";
+    return v;
+}
+
+function renderJournalFilter() {
+    if (!els.journalFilterWrap || !els.journalFilter) return;
+    if (!isAdmin()) {
+        els.journalFilterWrap.classList.add("hidden");
+        if (els.journalBureauTh) els.journalBureauTh.classList.add("hidden");
+        return;
+    }
+    els.journalFilterWrap.classList.remove("hidden");
+    if (els.journalBureauTh) els.journalBureauTh.classList.remove("hidden");
+    const prev = els.journalFilter.value || "*";
+    const allLabel = tr("cpt_journal_all_bureaux");
+    els.journalFilter.innerHTML =
+        `<option value="*">${allLabel}</option>` +
+        state.bureaux
+            .map((b) => {
+                const code = b.code ? ` [${b.code}]` : "";
+                return `<option value="${b.id}">${b.name}${code}</option>`;
+            })
+            .join("");
+    if ([...els.journalFilter.options].some((o) => o.value === prev)) {
+        els.journalFilter.value = prev;
+    } else {
+        els.journalFilter.value = "*";
+    }
+}
+
 function renderJournal() {
-    const entries = KasoftStore.filterJournalForBureau(state, currentBureauId());
+    renderJournalFilter();
+    const filterId = journalFilterId();
+    const showBureau = isAdmin() && filterId === "*";
+    const entries = KasoftStore.filterJournalForBureau(state, filterId);
+    const colSpan = showBureau ? 7 : 6;
+    if (els.journalBureauTh) {
+        els.journalBureauTh.classList.toggle("hidden", !isAdmin());
+    }
     els.journal.innerHTML =
         entries
-            .map(
-                (j) => `
+            .map((j) => {
+                const bureauCell = isAdmin()
+                    ? `<td>${KasoftStore.bureauNameForJournal(state, j.bureauId)}</td>`
+                    : "";
+                return `
         <tr>
             <td class="num" lang="en-US" dir="ltr">${KasoftStore.formatTime(j.time)}</td>
+            ${bureauCell}
             <td>${j.actif}</td>
             <td>${j.parti}</td>
             <td>${j.mourakib}</td>
             <td class="num" lang="en-US" dir="ltr">${j.action}</td>
             <td class="num" lang="en-US" dir="ltr">${j.total}</td>
-        </tr>`
-            )
-            .join("") || '<tr><td colspan="6" class="hint">لا توجد عمليات بعد</td></tr>';
+        </tr>`;
+            })
+            .join("") || `<tr><td colspan="${colSpan}" class="hint">لا توجد عمليات بعد</td></tr>`;
 }
 
 function rememberVoteTarget(partiId, mourakibId) {
@@ -579,14 +626,23 @@ els.btnRegionalPdf.addEventListener("click", async () => {
 
 if (els.btnJournal) {
     els.btnJournal.addEventListener("click", () => {
-        const bureau = currentBureau();
+        const filterId = journalFilterId();
+        const all = filterId === "*";
+        const bureau = !all ? state.bureaux.find((b) => b.id === filterId) : null;
+        const name = all
+            ? "جميع_المكاتب"
+            : (bureau?.name || "المكتب").replace(/\s+/g, "_");
         KasoftStore.downloadText(
-            `سجل_${(bureau?.name || "المكتب").replace(/\s+/g, "_")}.txt`,
-            KasoftStore.buildJournalLines(state, currentBureauId())
+            `سجل_${name}.txt`,
+            KasoftStore.buildJournalLines(state, filterId)
         );
         if (window.Ui) Ui.toast("تم تصدير السجل", "success");
     });
 }
+
+els.journalFilter?.addEventListener("change", () => {
+    renderJournal();
+});
 
 if (els.btnAllPvZip) {
     els.btnAllPvZip.addEventListener("click", async () => {
