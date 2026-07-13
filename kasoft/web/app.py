@@ -142,7 +142,7 @@ def inject_template_globals():
         "kasoft_is_admin": is_admin(),
         "kasoft_role": get_role() if is_authenticated() else None,
         "kasoft_bureau_id": get_bureau_id() if is_authenticated() else None,
-        "asset_version": os.environ.get("ASSET_VERSION", "41"),
+        "asset_version": os.environ.get("ASSET_VERSION", "42"),
     }
 
 export_state = {
@@ -262,7 +262,10 @@ def logout():
 
 
 @app.route("/verify", methods=["GET"])
+@login_required
 def verify_pv():
+    if not is_admin():
+        return redirect(url_for("dashboard"))
     code = (request.args.get("c") or "").strip()
     result = None
     parsed = None

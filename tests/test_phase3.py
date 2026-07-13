@@ -67,6 +67,7 @@ class Phase3AppTests(unittest.TestCase):
         self.assertIn(r.status_code, (302, 303))
 
     def test_verify_page_valid_and_invalid(self):
+        self._login_admin()
         code = sign_pv("PV-DEMO", self.bid, 7, "20260713")
         r = self.client.get(f"/verify?c={code}")
         self.assertEqual(r.status_code, 200)
@@ -75,6 +76,20 @@ class Phase3AppTests(unittest.TestCase):
         r2 = self.client.get("/verify?c=KASOFT|PV|X|Y|1|20260713|deadbeefdeadbeef")
         self.assertEqual(r2.status_code, 200)
         self.assertIn("غير مطابق", r2.text)
+
+    def test_verify_requires_admin(self):
+        r = self.client.get("/verify", follow_redirects=False)
+        self.assertIn(r.status_code, (302, 303))
+        # mourakib: login then blocked from verify
+        state = demo_state()
+        bid = state["bureaux"][0]["id"]
+        self.client.post(
+            "/login",
+            data={"pin": "0001", "bureau_id": bid},
+            follow_redirects=False,
+        )
+        r2 = self.client.get("/verify", follow_redirects=False)
+        self.assertIn(r2.status_code, (302, 303))
 
     def test_archive_after_pdf_export(self):
         self._login_admin()
