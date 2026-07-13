@@ -19,7 +19,7 @@ def uses_postgresql():
     return bool(DATABASE_URL)
 
 
-def _get_get_pg_engine():
+def _get_pg_engine():
     global _engine
     if _engine is None:
         from sqlalchemy import create_engine
@@ -38,7 +38,7 @@ def _conn():
 def _init_pg():
     from sqlalchemy import text
 
-    with _get_get_pg_engine().begin() as conn:
+    with _get_pg_engine().begin() as conn:
         conn.execute(
             text(
                 """
