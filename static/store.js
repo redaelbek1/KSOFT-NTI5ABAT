@@ -620,18 +620,22 @@ function buildVerifyPv(state, bureauId) {
     const valid = getBureauTotal(state, bureauId);
     const d = new Date();
     const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-    return `KASOFT|${pvNum}|${bureauId}|${valid}|${stamp}`;
+    // Client TXT: format Phase 3 sans HMAC (signature serveur via PDF uniquement)
+    return `KASOFT|PV|${pvNum}|${bureauId}|${valid}|${stamp}|CLIENT`;
 }
 
 function buildVerifyRapport(state) {
     const valid = state.bureaux.reduce((s, b) => s + getBureauTotal(state, b.id), 0);
     const d = new Date();
     const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-    return `KASOFT|RAPPORT|${valid}|${stamp}`;
+    return `KASOFT|RAPPORT|${valid}|${stamp}|CLIENT`;
 }
 
 function signatureLines(declaration) {
     return [
+        "",
+        "── التوقيع الرقمي KASOFT ──",
+        "للتوقيع الرقمي الكامل صدّر محضر PDF من الخادم (Phase 3)",
         "",
         "── التحقق والتوقيعات ──",
         declaration,

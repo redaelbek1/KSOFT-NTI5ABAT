@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}الأرشيف الوزاري{% endblock %}
+{% block content %}
+<section class="archive-page">
+    <div class="section-header">
+        <h1 data-i18n="archive_heading">الأرشيف الوزاري</h1>
+        <p class="hint" data-i18n="archive_subtitle">محاضر PDF موقّعة رقمياً — Phase 3</p>
+    </div>
+
+    {% if not entries %}
+    <p class="hint" data-i18n="archive_empty">لا توجد محاضر مؤرشفة بعد. صدّر محضر PDF من صفحة العدّ.</p>
+    {% else %}
+    <div class="table-wrap">
+        <table class="dash-table archive-table">
+            <thead>
+                <tr>
+                    <th data-i18n="archive_col_pv">رقم المحضر</th>
+                    <th data-i18n="archive_col_bureau">المكتب</th>
+                    <th data-i18n="archive_col_votes">الأصوات</th>
+                    <th data-i18n="archive_col_sig">التوقيع</th>
+                    <th data-i18n="archive_col_date">التاريخ</th>
+                    <th data-i18n="archive_col_actions">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td class="num" lang="en-US" dir="ltr">{{ e.pv_num }}</td>
+                    <td>{{ e.bureau_name }}{% if e.bureau_code %} <span class="num" lang="en-US" dir="ltr">({{ e.bureau_code }})</span>{% endif %}</td>
+                    <td class="num" lang="en-US" dir="ltr">{{ e.votes }}</td>
+                    <td class="num" lang="en-US" dir="ltr">{{ e.sig or '—' }}</td>
+                    <td class="num" lang="en-US" dir="ltr">{{ e.archived_at }}</td>
+                    <td>
+                        <a class="btn-sm btn-primary" href="{{ url_for('archive_detail', pv_num=e.pv_num) }}" data-i18n="archive_open">عرض</a>
+                        <a class="btn-sm" href="{{ url_for('archive_download', pv_num=e.pv_num) }}" data-i18n="archive_pdf">PDF</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

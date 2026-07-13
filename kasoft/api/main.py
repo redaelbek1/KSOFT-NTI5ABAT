@@ -17,6 +17,7 @@ from kasoft.core.auth import (
     resolve_login,
     validate_api_token,
 )
+from kasoft.core import archive as kasoft_archive
 from kasoft.core.db import load_state, record_vote, save_state, uses_postgresql
 from kasoft.core.pdf import generate_pv_pdf, generate_rapport_pdf
 from kasoft.core.txt import generate_journal_txt, generate_pv_txt, generate_rapport_txt
@@ -175,11 +176,26 @@ def _scoped_state(state, auth):
 def export_bureau_pdf(bureau_id: str, auth: AuthDep):
     _ensure_bureau_access(auth, bureau_id)
     state = load_state() or {}
-    pdf = generate_pv_pdf(state, bureau_id)
-    if not pdf:
+    meta = generate_pv_pdf(
+        state,
+        bureau_id,
+        signer=auth.get("role", "api"),
+        return_meta=True,
+    )
+    if not meta:
         raise HTTPException(status_code=404, detail="المكتب غير موجود.")
+    try:
+        kasoft_archive.save_pv_archive(
+            state=state,
+            bureau_id=bureau_id,
+            pdf_bytes=meta["pdf"],
+            verify_code=meta["verify_code"],
+            signer=auth.get("role", "api"),
+        )
+    except Exception:
+        pass
     return Response(
-        content=bytes(pdf),
+        content=bytes(meta["pdf"]),
         media_type="application/pdf",
         headers=_pdf_attachment("محضر_المكتب.pdf"),
     )

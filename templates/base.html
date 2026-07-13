@@ -73,10 +73,13 @@
             <a href="{{ url_for('comptage') }}" class="nav-link{% if active == 'comptage' %} active{% endif %}" data-i18n="nav_comptage">عدّ الأصوات</a>
             {% if kasoft_is_admin %}
             <a href="{{ url_for('configuration') }}" class="nav-link{% if active == 'config' %} active{% endif %}" data-i18n="nav_config">الإعدادات</a>
+            <a href="{{ url_for('archive_list') }}" class="nav-link{% if active == 'archive' %} active{% endif %}" data-i18n="nav_archive">الأرشيف</a>
             {% endif %}
+            <a href="{{ url_for('verify_pv') }}" class="nav-link{% if active == 'verify' %} active{% endif %}" data-i18n="nav_verify">تحقق QR</a>
             <a href="{{ url_for('logout') }}" class="nav-link nav-logout" data-i18n="nav_logout">خروج</a>
             {% else %}
             <a href="{{ url_for('export_results') }}" class="nav-link{% if active == 'export' %} active{% endif %}" data-i18n="nav_export">استخراج النتائج الرسمية</a>
+            <a href="{{ url_for('verify_pv') }}" class="nav-link{% if active == 'verify' %} active{% endif %}" data-i18n="nav_verify">تحقق QR</a>
             <a href="{{ url_for('login', next=request.path) }}" class="nav-link{% if active == 'login' %} active{% endif %}" data-i18n="nav_login">دخول كاسوفت</a>
             {% endif %}
 

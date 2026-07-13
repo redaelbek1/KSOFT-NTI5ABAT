@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{% if result and result.ok %}تحقق ناجح{% else %}التحقق من المحضر{% endif %}{% endblock %}
+{% block content %}
+<section class="verify-page">
+    <div class="verify-card">
+        <h1 data-i18n="verify_heading">التحقق من المحضر</h1>
+        <p class="hint" data-i18n="verify_subtitle">امسح رمز QR أو الصق رمز التحقق من المحضر الموقّع</p>
+
+        <form method="get" action="{{ url_for('verify_pv') }}" class="verify-form">
+            <label for="c" data-i18n="verify_code_label">رمز التحقق</label>
+            <input type="text" id="c" name="c" class="config-input" value="{{ code or '' }}"
+                   placeholder="KASOFT|PV|..." dir="ltr" lang="en-US" autocomplete="off">
+            <button type="submit" class="btn-primary" data-i18n="verify_btn">تحقق</button>
+        </form>
+
+        {% if code %}
+        <div class="verify-result verify-{{ result.status if result else 'malformed' }}">
+            {% if result and result.ok %}
+            <p class="verify-status ok" data-i18n="verify_ok">✓ التوقيع الرقمي صالح</p>
+            {% elif result and result.status == 'unsigned' %}
+            <p class="verify-status warn" data-i18n="verify_unsigned">رمز قديم بدون توقيع رقمي</p>
+            {% elif result and result.status == 'invalid' %}
+            <p class="verify-status bad" data-i18n="verify_invalid">✗ التوقيع غير مطابق</p>
+            {% else %}
+            <p class="verify-status bad" data-i18n="verify_bad">رمز غير صالح</p>
+            {% endif %}
+            {% if result %}
+            <p class="hint">{{ result.detail }}</p>
+            {% endif %}
+            {% if parsed %}
+            <dl class="verify-meta">
+                {% if parsed.kind == 'pv' %}
+                <dt data-i18n="verify_kind_pv">نوع</dt><dd data-i18n="verify_kind_pv_val">محضر مكتب</dd>
+                <dt data-i18n="verify_pv_num">رقم المحضر</dt><dd class="num" lang="en-US" dir="ltr">{{ parsed.pv_num }}</dd>
+                <dt data-i18n="verify_bureau">المكتب</dt><dd class="num" lang="en-US" dir="ltr">{{ archive.bureau_name if archive else parsed.bureau_id }}</dd>
+                {% else %}
+                <dt data-i18n="verify_kind_rapport">نوع</dt><dd data-i18n="verify_kind_rapport_val">تقرير إقليمي</dd>
+                {% endif %}
+                <dt data-i18n="verify_votes">الأصوات</dt><dd class="num" lang="en-US" dir="ltr">{{ parsed.votes }}</dd>
+                <dt data-i18n="verify_date">التاريخ</dt><dd class="num" lang="en-US" dir="ltr">{{ parsed.date }}</dd>
+                {% if parsed.sig %}
+                <dt data-i18n="verify_sig">التوقيع</dt><dd class="num" lang="en-US" dir="ltr">{{ parsed.sig }}</dd>
+                {% endif %}
+                {% if archive %}
+                <dt data-i18n="verify_archived">مؤرشف</dt>
+                <dd class="num" lang="en-US" dir="ltr">{{ archive.archived_at }}</dd>
+                {% endif %}
+            </dl>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

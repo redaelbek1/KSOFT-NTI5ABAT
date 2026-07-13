@@ -30,6 +30,8 @@ from kasoft.core.pdf import (
     generate_pv_pdf,
     generate_rapport_pdf,
 )
+from kasoft.core import archive as kasoft_archive
+from kasoft.core.verify import enrich_with_archive, verify_token
 from kasoft.export_ma.config import ELECTIONS, REGIONS
 from kasoft.export_ma.csv_export import export_selection, fetch_selection
 from kasoft.export_ma.geo_service import (
@@ -140,7 +142,7 @@ def inject_template_globals():
         "kasoft_is_admin": is_admin(),
         "kasoft_role": get_role() if is_authenticated() else None,
         "kasoft_bureau_id": get_bureau_id() if is_authenticated() else None,
-        "asset_version": os.environ.get("ASSET_VERSION", "40"),
+        "asset_version": os.environ.get("ASSET_VERSION", "41"),
     }
 
 export_state = {
@@ -257,6 +259,87 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("login"))
+
+
+@app.route("/verify", methods=["GET"])
+def verify_pv():
+    code = (request.args.get("c") or "").strip()
+    result = None
+    parsed = None
+    archive_meta = None
+    if code:
+        result = enrich_with_archive(verify_token(code))
+        parsed = result.get("parsed")
+        archive_meta = result.get("archive")
+    return render_template(
+        "verify.html",
+        active="verify",
+        code=code,
+        result=result,
+        parsed=parsed,
+        archive=archive_meta,
+    )
+
+
+@app.route("/archive")
+@login_required
+def archive_list():
+    if not is_admin():
+        return redirect(url_for("dashboard"))
+    return render_template(
+        "archive.html",
+        active="archive",
+        entries=kasoft_archive.list_entries(),
+    )
+
+
+@app.route("/archive/<path:pv_num>")
+@login_required
+def archive_detail(pv_num):
+    if not is_admin():
+        return redirect(url_for("dashboard"))
+    entry = kasoft_archive.get_meta(pv_num)
+    if not entry:
+        return render_template(
+            "archive.html",
+            active="archive",
+            entries=kasoft_archive.list_entries(),
+            error="المحضر غير موجود في الأرشيف.",
+        ), 404
+    return render_template("archive_detail.html", active="archive", entry=entry)
+
+
+@app.route("/archive/<path:pv_num>/pdf")
+@login_required
+def archive_download(pv_num):
+    if not is_admin():
+        return jsonify({"error": "غير مصرح."}), 403
+    pdf = kasoft_archive.read_pdf_bytes(pv_num)
+    if not pdf:
+        return jsonify({"error": "الملف غير موجود."}), 404
+    return send_file(
+        BytesIO(pdf),
+        as_attachment=True,
+        download_name=f"{pv_num}.pdf",
+        mimetype="application/pdf",
+    )
+
+
+@app.route("/api/kasoft/archive")
+@api_login_required
+def api_kasoft_archive():
+    if not is_admin():
+        return jsonify({"error": "غير مصرح."}), 403
+    return jsonify({"entries": kasoft_archive.list_entries()})
+
+
+def _request_host():
+    return request.host_url.rstrip("/") if request else None
+
+
+def _signer_label():
+    role = get_role() or "system"
+    return f"{role}"
 
 
 @app.route("/dashboard")
@@ -589,11 +672,27 @@ def kasoft_export_pv_pdf():
     bureau_id = (request.json or {}).get("bureau_id")
     if not bureau_id:
         return jsonify({"error": "معرف المكتب مطلوب."}), 400
-    pdf = generate_pv_pdf(data, bureau_id)
-    if not pdf:
+    meta = generate_pv_pdf(
+        data,
+        bureau_id,
+        signer=_signer_label(),
+        request_host=_request_host(),
+        return_meta=True,
+    )
+    if not meta:
         return jsonify({"error": "المكتب غير موجود."}), 404
+    try:
+        kasoft_archive.save_pv_archive(
+            state=data,
+            bureau_id=bureau_id,
+            pdf_bytes=meta["pdf"],
+            verify_code=meta["verify_code"],
+            signer=_signer_label(),
+        )
+    except Exception:
+        pass
     return send_file(
-        BytesIO(pdf),
+        BytesIO(meta["pdf"]),
         as_attachment=True,
         download_name="محضر_المكتب.pdf",
         mimetype="application/pdf",
@@ -606,7 +705,11 @@ def kasoft_rapport_pdf():
     data = migrate_state_payload(request.json or {})
     if not data.get("bureaux"):
         return jsonify({"error": "لا توجد بيانات."}), 400
-    pdf = generate_rapport_pdf(data)
+    pdf = generate_rapport_pdf(
+        data,
+        signer=_signer_label(),
+        request_host=_request_host(),
+    )
     return send_file(
         BytesIO(pdf),
         as_attachment=True,
@@ -631,7 +734,12 @@ def kasoft_export_all_pv_zip():
     count = 0
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for b in bureaux:
-            pdf = generate_pv_pdf(data, b["id"])
+            pdf = generate_pv_pdf(
+                data,
+                b["id"],
+                signer=_signer_label(),
+                request_host=_request_host(),
+            )
             if not pdf:
                 continue
             code = b.get("code") or b["id"]

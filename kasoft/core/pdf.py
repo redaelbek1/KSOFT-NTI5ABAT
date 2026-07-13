@@ -9,6 +9,7 @@ from bidi.algorithm import get_display
 from fpdf import FPDF
 
 from kasoft.core.auth import make_qr_base64
+from kasoft.core.verify import qr_payload, sign_pv, sign_rapport
 from kasoft.paths import STATIC_DIR
 
 FONT_DIR = STATIC_DIR / "fonts"
@@ -195,9 +196,28 @@ class KasoftPDF(FPDF):
             self.cell(w, 5, _ar(label), align="C")
         self.set_y(y0 + 28)
 
-    def _qr_footer(self, verify_code):
+    def _digital_signature_block(self, verify_code, signer=None):
+        self._section("التوقيع الرقمي KASOFT")
+        self._set_body(9)
+        self.set_text_color(55, 65, 81)
+        self.cell(0, 6, _ar("محضر موقّع رقمياً (HMAC) — قابل للتحقق عبر /verify"), ln=1, align="R")
+        if signer:
+            self.cell(0, 6, _ar(f"الموقّع: {signer}"), ln=1, align="R")
+        self.cell(0, 6, _ar(f"الطابع الزمني: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"), ln=1, align="R")
+        sig = ""
+        parts = (verify_code or "").split("|")
+        if len(parts) >= 7 and parts[1] == "PV":
+            sig = parts[-1]
+        elif len(parts) >= 5 and parts[1] == "RAPPORT":
+            sig = parts[-1]
+        if sig:
+            self.cell(0, 6, f"SIG: {sig}", ln=1, align="C")
+        self.ln(2)
+
+    def _qr_footer(self, verify_code, request_host=None):
+        qr_text = qr_payload(verify_code, request_host)
         try:
-            raw = base64.b64decode(make_qr_base64(verify_code))
+            raw = base64.b64decode(make_qr_base64(qr_text))
             img = BytesIO(raw)
             x = (210 - 28) / 2
             self.image(img, x=x, y=self.get_y(), w=28)
@@ -207,6 +227,8 @@ class KasoftPDF(FPDF):
         self._set_body(8)
         self.set_text_color(107, 114, 128)
         self.cell(0, 5, verify_code, ln=1, align="C")
+        self.ln(1)
+        self.cell(0, 5, _ar("امسح رمز QR أو زر صفحة /verify للتحقق"), ln=1, align="C")
         self.ln(2)
         self.cell(0, 5, _ar("كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق"), ln=1, align="C")
 
@@ -223,7 +245,7 @@ def _pv_number(bureau, bureau_id, pv):
     return f"PV-{code}-{datetime.now().strftime('%Y%m%d')}"
 
 
-def generate_pv_pdf(state, bureau_id):
+def generate_pv_pdf(state, bureau_id, signer=None, request_host=None, return_meta=False):
     bureau = next((b for b in state.get("bureaux", []) if b["id"] == bureau_id), None)
     if not bureau:
         return None
@@ -236,11 +258,11 @@ def generate_pv_pdf(state, bureau_id):
     votants = int(pv.get("votants", 0) or (valid + blancs + nuls))
     participation = min(100, round((votants / inscrits) * 100)) if inscrits else 0
     pv_num = _pv_number(bureau, bureau_id, pv)
-    verify = f"KASOFT|{pv_num}|{bureau_id}|{valid}|{datetime.now().strftime('%Y%m%d')}"
+    verify = sign_pv(pv_num, bureau_id, valid)
 
     pdf = KasoftPDF()
     pdf.add_page()
-    pdf._header_band("محضر مكتب الاقتراع — نسخة رسمية (v1)")
+    pdf._header_band("محضر مكتب الاقتراع — نسخة رسمية موقعة (Phase 3)")
     pdf._meta_row([
         ("رقم المحضر", pv_num),
         ("رمز المكتب", bureau.get("code", "—") or "—"),
@@ -272,16 +294,20 @@ def generate_pv_pdf(state, bureau_id):
         rows.append([p["name"], total, "، ".join(details) or "—"])
     pdf._table(headers, rows, [55, 25, 100])
 
+    pdf._digital_signature_block(verify, signer=signer)
     pdf._section("التحقق والتوقيعات")
     pdf._set_body(9)
     pdf.cell(0, 7, _ar("تصريح: أؤكد أن هذا المحضر مطابق لنتائج الفرز داخل المكتب المذكور."), ln=1, align="R")
     pdf.ln(1)
     pdf._signature_boxes()
-    pdf._qr_footer(verify)
-    return _pdf_bytes(pdf)
+    pdf._qr_footer(verify, request_host=request_host)
+    pdf_bytes = _pdf_bytes(pdf)
+    if return_meta:
+        return {"pdf": pdf_bytes, "verify_code": verify, "pv_num": pv_num, "votes": valid}
+    return pdf_bytes
 
 
-def generate_rapport_pdf(state):
+def generate_rapport_pdf(state, signer=None, request_host=None):
     bureaux = state.get("bureaux", [])
     total_inscrits = sum(int(b.get("inscrits", 0)) for b in bureaux)
     total_valid = sum(_bureau_total(state, b["id"]) for b in bureaux)
@@ -296,11 +322,11 @@ def generate_rapport_pdf(state):
         min(100, round((total_votants / total_inscrits) * 100)) if total_inscrits else 0
     )
     ouverts = sum(1 for b in bureaux if b.get("status") == "ouvert")
-    verify = f"KASOFT|RAPPORT|{total_valid}|{datetime.now().strftime('%Y%m%d')}"
+    verify = sign_rapport(total_valid)
 
     pdf = KasoftPDF()
     pdf.add_page()
-    pdf._header_band("التقرير الإقليمي الموحد")
+    pdf._header_band("التقرير الإقليمي الموحد — موقّع (Phase 3)")
     pdf._meta_row([
         ("التاريخ", datetime.now().strftime("%Y-%m-%d")),
         ("عدد المكاتب", len(bureaux)),
@@ -348,10 +374,11 @@ def generate_rapport_pdf(state):
         parti_rows.append([p["name"], total])
     pdf._table(["الحزب", "مجموع الأصوات"], parti_rows, [130, 50])
 
+    pdf._digital_signature_block(verify, signer=signer)
     pdf._section("التحقق والتوقيعات")
     pdf._set_body(9)
     pdf.cell(0, 7, _ar("تصريح: أؤكد صحة هذا التقرير الإقليمي الموحد."), ln=1, align="R")
     pdf.ln(1)
     pdf._signature_boxes()
-    pdf._qr_footer(verify)
+    pdf._qr_footer(verify, request_host=request_host)
     return _pdf_bytes(pdf)

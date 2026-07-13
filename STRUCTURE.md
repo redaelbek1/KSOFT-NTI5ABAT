@@ -1,4 +1,4 @@
-# Structure du projet KASOFT (Phase 2)
+# Structure du projet KASOFT (Phase 3)
 
 ```
 nti5abat/
@@ -6,15 +6,15 @@ nti5abat/
 ├── asgi.py                # Entrée FastAPI+Flask (uvicorn / gunicorn)
 ├── kasoft/                # Code Python
 │   ├── paths.py           # Racine projet, data/, static/
-│   ├── core/              # Électoral : auth, db, merge, pdf, txt, seed
+│   ├── core/              # auth, db, merge, pdf, txt, seed, verify, archive
 │   ├── api/               # FastAPI Phase 2 + WebSocket
 │   ├── export_ma/         # Export elections.ma
-│   └── web/               # Flask (routes UI)
+│   └── web/               # Flask (routes UI) — /verify, /archive
 ├── static/                # JS, CSS, fonts, icons
-├── templates/             # Pages HTML
+├── templates/             # Pages HTML (+ verify, archive)
 ├── tests/
 ├── deploy/                # ngrok, Oracle, Cloudflare
-├── data/                  # SQLite / JSON / cache géo
+├── data/                  # SQLite / JSON / cache géo / archive/
 ├── docker-compose.yml
 └── requirements.txt
 ```
@@ -25,3 +25,9 @@ nti5abat/
 python app.py
 python -m unittest discover -s tests -v
 ```
+
+## Phase 3
+
+- `/verify` — validation publique du QR / code HMAC
+- `/archive` — archive ministérielle (admin)
+- PV PDF signé (HMAC) + archivage auto à l’export

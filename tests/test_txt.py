@@ -25,8 +25,9 @@ class KasoftTxtTests(unittest.TestCase):
 
     def test_pv_txt_has_verify_and_signatures(self):
         text = generate_pv_txt(self.state, self.bid)
-        self.assertIn("رمز التحقق: KASOFT|", text)
+        self.assertIn("رمز التحقق: KASOFT|PV|", text)
         self.assertIn("── التحقق والتوقيعات ──", text)
+        self.assertIn("التوقيع الرقمي KASOFT", text)
         self.assertIn("تصريح:", text)
         self.assertIn("رئيس مكتب الاقتراع", text)
         self.assertIn("التاريخ والوقت:", text)

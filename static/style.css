@@ -1217,3 +1217,45 @@ select:disabled { background: #f5f5f5; color: #999; }
 .toast-error { border-right-color: #c62828; background: #fff5f5; }
 .toast-warn { border-right-color: #ef6c00; background: #fff8e1; }
 .toast-info { border-right-color: var(--primary-light); }
+
+/* Phase 3 — verify + archive */
+.verify-page, .archive-page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+}
+.verify-card {
+    background: var(--surface, #fff);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+.verify-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+}
+.verify-result {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e5e7eb;
+}
+.verify-valid, .verify-result.verify-valid { background: #f0fdf4; border-color: #86efac; }
+.verify-invalid, .verify-result.verify-invalid,
+.verify-malformed, .verify-result.verify-malformed { background: #fef2f2; border-color: #fecaca; }
+.verify-unsigned, .verify-result.verify-unsigned { background: #fffbeb; border-color: #fde68a; }
+.verify-status { font-weight: 700; margin: 0 0 0.5rem; }
+.verify-status.ok { color: #15803d; }
+.verify-status.bad { color: #b91c1c; }
+.verify-status.warn { color: #b45309; }
+.verify-meta {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.4rem 1rem;
+    margin: 1rem 0 0;
+}
+.verify-meta dt { color: #6b7280; font-size: 0.85rem; }
+.verify-meta dd { margin: 0; font-weight: 600; }
+.archive-table .btn-sm { margin-inline-start: 0.25rem; }
+

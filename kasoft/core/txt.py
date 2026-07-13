@@ -1,4 +1,4 @@
-"""Génération TXT — alignée sur les PDF KASOFT (Phase 2)."""
+"""Génération TXT — alignée sur les PDF KASOFT (Phase 2–3)."""
 from datetime import datetime
 
 from kasoft.core.pdf import (
@@ -7,6 +7,7 @@ from kasoft.core.pdf import (
     _pv_number,
     _status_label,
 )
+from kasoft.core.verify import sign_pv, sign_rapport
 
 _FOOTER = "كاسوفت للمعلومية والاستشارات — الدار البيضاء — سري وموثوق"
 
@@ -20,23 +21,36 @@ def _now_datetime():
 
 
 def _verify_pv(bureau_id, pv_num, valid):
-    return f"KASOFT|{pv_num}|{bureau_id}|{valid}|{datetime.now().strftime('%Y%m%d')}"
+    return sign_pv(pv_num, bureau_id, valid)
 
 
 def _verify_rapport(total_valid):
-    return f"KASOFT|RAPPORT|{total_valid}|{datetime.now().strftime('%Y%m%d')}"
+    return sign_rapport(total_valid)
 
 
-def _signature_block(declaration):
-    return [
+def _signature_block(declaration, verify_code=None, signer=None):
+    lines = [
         "",
-        "── التحقق والتوقيعات ──",
-        declaration,
-        "",
-        "التوقيع — رئيس مكتب الاقتراع: _______________________",
-        "التوقيع — ممثل السلطة الإشرافية: _______________________",
-        "التوقيع — ممثل الأحزاب / المراقبون: _______________________",
+        "── التوقيع الرقمي KASOFT ──",
+        "محضر / تقرير موقّع رقمياً — قابل للتحقق عبر /verify",
     ]
+    if signer:
+        lines.append(f"الموقّع: {signer}")
+    lines.extend(
+        [
+            f"الطابع الزمني: {_now_datetime()}",
+            "",
+            "── التحقق والتوقيعات ──",
+            declaration,
+            "",
+            "التوقيع — رئيس مكتب الاقتراع: _______________________",
+            "التوقيع — ممثل السلطة الإشرافية: _______________________",
+            "التوقيع — ممثل الأحزاب / المراقبون: _______________________",
+        ]
+    )
+    if verify_code:
+        lines.append(f"رمز التحقق: {verify_code}")
+    return lines
 
 
 def generate_pv_txt(state, bureau_id):
@@ -110,10 +124,10 @@ def generate_pv_txt(state, bureau_id):
 
     lines.extend(
         _signature_block(
-            "تصريح: أؤكد أن هذا المحضر مطابق لنتائج الفرز داخل المكتب المذكور."
+            "تصريح: أؤكد أن هذا المحضر مطابق لنتائج الفرز داخل المكتب المذكور.",
+            verify_code=verify,
         )
     )
-    lines.append(f"رمز التحقق: {verify}")
     lines.append("")
     lines.append(_FOOTER)
     return "\n".join(lines)
@@ -189,9 +203,11 @@ def generate_rapport_txt(state):
         lines.append(f"{p['name']}: {total} صوت")
 
     lines.extend(
-        _signature_block("تصريح: أؤكد صحة هذا التقرير الإقليمي الموحد.")
+        _signature_block(
+            "تصريح: أؤكد صحة هذا التقرير الإقليمي الموحد.",
+            verify_code=verify,
+        )
     )
-    lines.append(f"رمز التحقق: {verify}")
     lines.append("")
     lines.append(_FOOTER)
     return "\n".join(lines)

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}محضر {{ entry.pv_num }}{% endblock %}
+{% block content %}
+<section class="archive-page">
+    <p><a href="{{ url_for('archive_list') }}" data-i18n="archive_back">← العودة للأرشيف</a></p>
+    <h1 data-i18n="archive_detail_heading">تفاصيل المحضر المؤرشف</h1>
+    <dl class="verify-meta">
+        <dt data-i18n="archive_col_pv">رقم المحضر</dt>
+        <dd class="num" lang="en-US" dir="ltr">{{ entry.pv_num }}</dd>
+        <dt data-i18n="archive_col_bureau">المكتب</dt>
+        <dd>{{ entry.bureau_name }} ({{ entry.bureau_code or entry.bureau_id }})</dd>
+        <dt data-i18n="archive_col_votes">الأصوات</dt>
+        <dd class="num" lang="en-US" dir="ltr">{{ entry.votes }}</dd>
+        <dt data-i18n="archive_col_sig">التوقيع</dt>
+        <dd class="num" lang="en-US" dir="ltr">{{ entry.sig or '—' }}</dd>
+        <dt data-i18n="verify_archived">مؤرشف</dt>
+        <dd class="num" lang="en-US" dir="ltr">{{ entry.archived_at }}</dd>
+        <dt data-i18n="archive_signer">الموقّع</dt>
+        <dd>{{ entry.signer or '—' }}</dd>
+    </dl>
+    <p>
+        <a class="btn-primary" href="{{ url_for('archive_download', pv_num=entry.pv_num) }}" data-i18n="archive_pdf">تحميل PDF</a>
+        {% if entry.verify_code %}
+        <a class="btn-link" href="{{ url_for('verify_pv', c=entry.verify_code) }}" data-i18n="archive_verify">التحقق</a>
+        {% endif %}
+    </p>
+    {% if entry.verify_code %}
+    <p class="hint num" lang="en-US" dir="ltr">{{ entry.verify_code }}</p>
+    {% endif %}
+</section>
+{% endblock %}
