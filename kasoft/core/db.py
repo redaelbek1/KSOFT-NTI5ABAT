@@ -8,7 +8,7 @@ from kasoft.paths import DATA_DIR
 DB_PATH = DATA_DIR / "kasoft.db"
 JSON_PATH = DATA_DIR / "kasoft_state.json"
 _db_ready = False
-_pg_engine = None
+_engine = None
 
 DATABASE_URL = (os.environ.get("DATABASE_URL") or "").strip()
 if DATABASE_URL.startswith("postgres://"):
@@ -19,13 +19,13 @@ def uses_postgresql():
     return bool(DATABASE_URL)
 
 
-def _pg_engine():
-    global _pg_engine
-    if _pg_engine is None:
+def _get_get_pg_engine():
+    global _engine
+    if _engine is None:
         from sqlalchemy import create_engine
 
-        _pg_engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-    return _pg_engine
+        _engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+    return _engine
 
 
 def _conn():
@@ -38,7 +38,7 @@ def _conn():
 def _init_pg():
     from sqlalchemy import text
 
-    with _pg_engine().begin() as conn:
+    with _get_get_pg_engine().begin() as conn:
         conn.execute(
             text(
                 """
@@ -84,7 +84,7 @@ def _load_state_raw():
     if uses_postgresql():
         from sqlalchemy import text
 
-        with _pg_engine().connect() as conn:
+        with _get_pg_engine().connect() as conn:
             row = conn.execute(
                 text("SELECT payload FROM kasoft_state WHERE id = 1")
             ).fetchone()
@@ -116,7 +116,7 @@ def save_state(data):
     if uses_postgresql():
         from sqlalchemy import text
 
-        with _pg_engine().begin() as conn:
+        with _get_pg_engine().begin() as conn:
             conn.execute(
                 text(
                     """
