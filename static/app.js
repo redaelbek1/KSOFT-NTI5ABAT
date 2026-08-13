@@ -146,6 +146,13 @@ async function apiGet(url) {
     return data;
 }
 
+async function loadRegions(token) {
+    const data = await apiGet(`/api/regions?election=${electionKey()}`);
+    if (token !== loadToken) return;
+    const placeholder = isCommunal() ? tr("exp_ph_region") : tr("exp_national");
+    fillOptions(els.region, data, placeholder);
+}
+
 async function loadCircuitsLegislative(token) {
     const region = parseInt(els.region.value, 10);
     const province = parseInt(els.province.value, 10);
@@ -198,7 +205,7 @@ async function loadCircuitsCommunal(token) {
     els.status.textContent = "";
 }
 
-function onTypeChange() {
+async function onTypeChange() {
     loadToken += 1;
     const token = loadToken;
     const communal = isCommunal();
@@ -213,11 +220,9 @@ function onTypeChange() {
         opt.hidden = communal;
     });
 
-    if (communal && els.region.value === "0") {
-        els.region.value = "2";
-    }
-
     resetDependents();
+    await loadRegions(token);
+    if (token !== loadToken) return;
 
     const region = parseInt(els.region.value, 10);
     if (region > 0) {

@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import requests
@@ -7,6 +8,7 @@ from kasoft.paths import DATA_DIR
 
 BASE_URL = "https://www.elections.ma"
 VOIX_CACHE_DIR = DATA_DIR / "voix_disk"
+CACHE_ONLY = os.environ.get("KASOFT_CACHE_ONLY", "1") == "1"
 
 SESSION = requests.Session()
 SESSION.headers.update(
@@ -52,14 +54,26 @@ def _referer(election_key):
     return ELECTIONS[election_key]["page_url"]
 
 
-def _post_cloudscraper(service, method, payload, referer):
-    """Contourne Cloudflare (nécessaire pour elections.ma)."""
+_SCRAPER = None
+
+
+def _get_scraper():
+    global _SCRAPER
+    if _SCRAPER is not None:
+        return _SCRAPER
     try:
         import cloudscraper
     except ImportError as exc:
         raise ElectionsApiError("cloudscraper-missing") from exc
+    _SCRAPER = cloudscraper.create_scraper(
+        browser={"browser": "chrome", "platform": "windows", "mobile": False}
+    )
+    return _SCRAPER
 
-    scraper = cloudscraper.create_scraper()
+
+def _post_cloudscraper(service, method, payload, referer):
+    """Contourne Cloudflare (nécessaire pour elections.ma)."""
+    scraper = _get_scraper()
     url = f"{BASE_URL}/{service}.asmx/{method}"
     response = scraper.post(
         url,
@@ -95,6 +109,11 @@ def _post(service, method, payload, election_key):
     hit = _disk_get(key)
     if hit is not None:
         return hit
+
+    if CACHE_ONLY:
+        raise ElectionsApiError(
+            "النتائج غير متوفرة في الكاش المحلي. اختر دائرة أخرى متاحة."
+        )
 
     referer = _referer(election_key)
     last_err = None

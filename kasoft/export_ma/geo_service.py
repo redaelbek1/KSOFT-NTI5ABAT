@@ -1,4 +1,5 @@
 import json
+import os
 import queue
 import threading
 from pathlib import Path
@@ -11,7 +12,8 @@ from kasoft.paths import DATA_DIR
 
 OPT_JS = """els => els.map(e => ({value: e.value, text: e.textContent.trim()}))"""
 CACHE_DIR = DATA_DIR / "geo_disk"
-WAIT_MS = 1500
+WAIT_MS = int(os.environ.get("KASOFT_GEO_WAIT_MS", "1500"))
+CACHE_ONLY = os.environ.get("KASOFT_CACHE_ONLY", "1") == "1"
 
 
 def _cache_key(*parts):
@@ -215,6 +217,10 @@ def _cached(key, fetcher, *args):
     hit = _disk_get(key)
     if hit is not None:
         return hit
+    if CACHE_ONLY:
+        raise RuntimeError(
+            "البيانات غير جاهزة محلياً (كاش). اختر دائرة/جماعة أخرى أو حدّث data/geo_disk."
+        )
     try:
         data = _get_worker().run(fetcher, *args)
     except RuntimeError:
@@ -240,21 +246,72 @@ def get_regions():
     ]
 
 
+def get_available_regions(election_key):
+    if ELECTIONS[election_key]["type"] != "communal" or not CACHE_ONLY:
+        return REGIONS
+
+    available = []
+    for region in REGIONS:
+        try:
+            if get_provinces(election_key, region["id"]):
+                available.append(region)
+        except RuntimeError:
+            continue
+    return available
+
+
 def get_provinces(election_key, region_id):
     if region_id == 0:
         return []
     key = _cache_key("provinces", election_key, region_id)
-    return _cached(key, _fetch_provinces, election_key, region_id)
+    provinces = _cached(key, _fetch_provinces, election_key, region_id)
+    if CACHE_ONLY and ELECTIONS[election_key]["type"] == "communal":
+        provinces = [
+            province
+            for province in provinces
+            if (
+                CACHE_DIR
+                / f"communes_{election_key}_{region_id}_{province['id']}.json"
+            ).exists()
+        ]
+    return provinces
 
 
 def get_communes(election_key, region_id, province_id):
     key = _cache_key("communes", election_key, region_id, province_id)
-    return _cached(key, _fetch_communes, election_key, region_id, province_id)
+    communes = _cached(key, _fetch_communes, election_key, region_id, province_id)
+    if CACHE_ONLY:
+        communes = [
+            commune
+            for commune in communes
+            if (
+                CACHE_DIR
+                / (
+                    f"circ_com_{election_key}_{region_id}_"
+                    f"{province_id}_{commune['id']}.json"
+                )
+            ).exists()
+        ]
+    return communes
 
 
 def get_circuits_legislative(election_key, region_id, province_id=0):
     key = _cache_key("circ_leg", election_key, region_id, province_id)
-    return _cached(key, _fetch_circuits_legislative, election_key, region_id, province_id)
+    circuits = _cached(key, _fetch_circuits_legislative, election_key, region_id, province_id)
+    if not CACHE_ONLY:
+        return circuits
+
+    # Ne garder que les options déjà présentes dans selection_disk
+    selection_dir = DATA_DIR / "selection_disk"
+    available = []
+    for circuit in circuits:
+        cid = circuit["id"]
+        cache_name = (
+            f"{election_key}_r{region_id}_p{province_id}_c0_circ{cid}.json"
+        )
+        if (selection_dir / cache_name).exists():
+            available.append(circuit)
+    return available
 
 
 def get_circuits_communal(election_key, region_id, province_id, commune_id):

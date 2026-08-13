@@ -1,0 +1,186 @@
+.mobile-comptage-body {
+    margin: 0;
+    background: #eef2f7;
+    font-family: "Tajawal", sans-serif;
+    min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mobile-comptage-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: linear-gradient(180deg, #185ea5 0%, #1565c0 100%);
+    color: #fff;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-top, 0));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.mobile-logo {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.mobile-logout {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+}
+
+.mobile-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.mobile-total-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+}
+
+.mobile-total-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.mobile-fields {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.mobile-field {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+}
+
+.mobile-field span {
+    opacity: 0.9;
+}
+
+.mobile-field select,
+.mobile-field input {
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 0.65rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    box-sizing: border-box;
+}
+
+.mobile-field select:disabled {
+    opacity: 0.85;
+    background: #f0f4f8;
+}
+
+.mobile-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+
+.mobile-locked {
+    margin: 0.5rem 0 0;
+    padding: 0.45rem 0.6rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-size: 0.82rem;
+}
+
+.mobile-comptage-main {
+    padding: 0.75rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.mobile-parti-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.mobile-parti-grid .parti-card {
+    margin: 0;
+}
+
+.mobile-parti-grid .btn-counter {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 1.25rem;
+}
+
+.mobile-parti-grid .counter-value {
+    min-width: 2.5rem;
+    font-size: 1.1rem;
+}
+
+.mobile-parti-grid .mourakib-name {
+    font-size: 0.9rem;
+}
+
+.mobile-journal-card {
+    margin-bottom: 1rem;
+}
+
+.mobile-journal-card .card-title {
+    font-size: 0.88rem;
+    padding: 0.65rem 1rem;
+}
+
+.mobile-journal-card .journal-wrap {
+    padding: 0 0.5rem 0.75rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mobile-journal-card .journal-table {
+    font-size: 0.75rem;
+}
+
+.mobile-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-empty p:first-child {
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.mobile-btn-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #1565c0;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.mobile-parti-grid.comptage-locked .btn-counter:disabled {
+    opacity: 0.45;
+}
+
+@media (min-width: 520px) {
+    .mobile-parti-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}

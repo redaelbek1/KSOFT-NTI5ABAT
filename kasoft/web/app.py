@@ -35,6 +35,7 @@ from kasoft.core.verify import enrich_with_archive, verify_token
 from kasoft.export_ma.config import ELECTIONS, REGIONS
 from kasoft.export_ma.csv_export import export_selection, fetch_selection
 from kasoft.export_ma.geo_service import (
+    get_available_regions,
     get_circuits_communal,
     get_circuits_legislative,
     get_communes,
@@ -205,6 +206,12 @@ def comptage():
     return render_template("comptage.html", active="comptage")
 
 
+@app.route("/mobile")
+@login_required
+def comptage_mobile():
+    return render_template("comptage_mobile.html")
+
+
 @app.route("/configuration")
 @admin_required
 def configuration():
@@ -243,7 +250,7 @@ def login():
                     return redirect(url_for("dashboard"))
                 return redirect(nxt)
             if scoped_bureau:
-                return redirect(f"/comptage?bureau={scoped_bureau}")
+                return redirect(f"/mobile?bureau={scoped_bureau}")
             return redirect(url_for("dashboard"))
         record_failed_login(client_ip)
         return render_template(
@@ -363,6 +370,14 @@ def api_health():
         "bureaux": len(state.get("bureaux", [])),
         "geo_cache_files": cache_files,
     })
+
+
+@app.route("/api/regions")
+def api_regions():
+    election = request.args.get("election")
+    if not election or election not in ELECTIONS:
+        return jsonify([])
+    return jsonify(get_available_regions(election))
 
 
 @app.route("/api/provinces")

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+    <meta name="theme-color" content="#185ea5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>عدّ الأصوات — كاسوفت</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}-mob">
+    <link rel="stylesheet" href="{{ url_for('static', filename='comptage-mobile.css') }}?v={{ asset_version }}-mob">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-512.png') }}">
+</head>
+<body class="mobile-comptage-body">
+    <header class="mobile-comptage-header">
+        <div class="mobile-header-top">
+            <span class="mobile-logo">كاسوفت</span>
+            <a href="{{ url_for('logout') }}" class="mobile-logout" data-i18n="nav_logout">خروج</a>
+        </div>
+        <div class="mobile-total-row">
+            <span class="mobile-total-label" data-i18n="cpt_total">مجموع الأصوات</span>
+            <span class="mobile-total-value num" id="total-votes" lang="en-US" dir="ltr">0</span>
+        </div>
+        <div class="mobile-fields">
+            <label class="mobile-field">
+                <span data-i18n="cpt_bureau">المكتب</span>
+                <select id="comptage-bureau"></select>
+            </label>
+            <label class="mobile-field">
+                <span data-i18n="cpt_actif">المراقب النشط</span>
+                <input type="text" id="mourakib-actif" data-i18n-placeholder="cpt_actif_ph" placeholder="الاسم الكامل للمراقب">
+            </label>
+        </div>
+        <p id="scoped-bureau-hint" class="mobile-hint hidden" data-i18n="cpt_scoped_bureau_hint">مكتبك المعيّن — لا يمكن التبديل</p>
+        <p id="comptage-locked-banner" class="mobile-locked hidden" data-i18n="cpt_locked">المكتب مغلق — العرض فقط</p>
+    </header>
+
+    <main class="mobile-comptage-main">
+        <div id="comptage-empty" class="mobile-empty hidden">
+            <p data-i18n="cpt_setup_title">الإعداد مطلوب</p>
+            <p class="mobile-hint" data-i18n="cpt_setup_step3">عد هنا بعد إعداد المكاتب والأحزاب</p>
+            {% if kasoft_is_admin %}
+            <a href="{{ url_for('configuration') }}" class="mobile-btn-link" data-i18n="cpt_go_config">الإعدادات</a>
+            {% endif %}
+        </div>
+
+        <div id="comptage-app" class="hidden">
+            <section class="parti-grid mobile-parti-grid" id="parti-grid"></section>
+
+            <section class="mobile-journal-card card">
+                <div class="card-title" data-i18n="cpt_journal">سجل العمليات (آخر 50 إجراء)</div>
+                <div class="journal-wrap">
+                    <table class="journal-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="th_time">الوقت</th>
+                                <th data-i18n="th_actif">المراقب النشط</th>
+                                <th data-i18n="th_parti">الحزب</th>
+                                <th data-i18n="th_mourakib">المراقب</th>
+                                <th data-i18n="th_action">الإجراء</th>
+                                <th data-i18n="th_total">المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journal-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        window.KASOFT_ROLE = {{ kasoft_role|tojson }};
+        window.KASOFT_SCOPED_BUREAU_ID = {{ kasoft_bureau_id|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='i18n.js') }}?v={{ asset_version }}-mob"></script>
+    <script src="{{ url_for('static', filename='store.js') }}?v={{ asset_version }}-mob"></script>
+    <script src="{{ url_for('static', filename='comptage-mobile.js') }}?v={{ asset_version }}-mob"></script>
+</body>
+</html>
