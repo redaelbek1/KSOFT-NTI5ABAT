@@ -6,7 +6,7 @@
     <section class="page-intro">
         <h2 data-i18n="cpt_title">عدّ الأصوات</h2>
         <p data-i18n="cpt_intro">تسجيل الأصوات لحظة بلحظة عبر المراقبين في مكاتب الاقتراع</p>
-        <p class="hint"><a href="{{ url_for('comptage_mobile') }}">📱 نسخة الهاتف</a></p>
+        <p class="hint"><a href="{{ url_for('comptage_phone', view='phone') }}">📱 نسخة الهاتف</a></p>
     </section>
 
     <div id="comptage-empty" class="card coming-soon-card hidden">
@@ -50,6 +50,7 @@
                 <span class="totals-sub" id="pv-detail">صحيحة: 0 | بيضاء: 0 | ملغاة: 0</span>
             </div>
             <div class="totals-breakdown" id="totals-breakdown"></div>
+            {% include 'shared/bureau_counters.html' %}
         </section>
 
         <section class="card filter-card">
@@ -85,6 +86,7 @@
                     <input type="text" id="pv-numero" class="config-input num" lang="en-US" dir="ltr" readonly>
                 </div>
                 <div class="comptage-toolbar-actions">
+                    <button type="button" id="btn-open-pv-scan" class="btn-primary pv-scan-pc-btn" data-i18n="pv_scan_pick_pc">📁 اختيار صورة المحضر</button>
                     <button type="button" id="btn-export-pv" class="btn-secondary" data-i18n="cpt_export_pv_txt">تصدير محضر TXT</button>
                     <button type="button" id="btn-export-pv-pdf" class="btn-secondary" data-i18n="cpt_export_pv_pdf">تصدير محضر PDF</button>
                     <button type="button" id="btn-export-regional" class="btn-primary" data-i18n="cpt_report_txt">تقرير TXT</button>
@@ -104,6 +106,8 @@
             </div>
         </section>
 
+        {% include 'shared/pv_scan_panel.html' %}
+
         <section class="parti-grid" id="parti-grid"></section>
 
         <section class="card">
@@ -122,7 +126,7 @@
                             <th id="th-journal-bureau" class="hidden" data-i18n="th_bureau">المكتب</th>
                             <th data-i18n="th_actif">المراقب النشط</th>
                             <th data-i18n="th_parti">الحزب</th>
-                            <th data-i18n="th_mourakib">المراقب</th>
+                            <th data-i18n="th_mourakib">اللائحة</th>
                             <th data-i18n="th_action">الإجراء</th>
                             <th data-i18n="th_total">المجموع</th>
                         </tr>
@@ -137,5 +141,8 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='store.js') }}?v={{ asset_version }}"></script>
-<script src="{{ url_for('static', filename='comptage.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='shared/bureau-counters.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='shared/pv-scan.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='shared/parties-table.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='pc/comptage.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

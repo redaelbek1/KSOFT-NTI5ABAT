@@ -1,0 +1,17 @@
+<!-- مقارنة محضر ورقي بالبيانات المسجلة -->
+<section id="pv-scan-section" class="pv-scan-section">
+    <div class="pv-scan-title" data-i18n="pv_scan_title">📷 مقارنة المحضر (صورة)</div>
+    <p class="pv-scan-hint" data-i18n="pv_scan_hint">التقط صورة للمحضر أو اختر صورة — يتم استخراج الأرقام ومقارنتها مع التطبيق</p>
+    <div class="pv-scan-controls">
+        <label class="pv-scan-file-label">
+            <input type="file" id="pv-scan-input" accept="image/*" class="pv-scan-input-hidden">
+            <span class="pv-scan-file-btn" data-i18n="pv_scan_pick_pc">📁 اختيار صورة المحضر</span>
+        </label>
+        <button type="button" id="pv-scan-run" class="pv-scan-run-btn" disabled data-i18n="pv_scan_run">مقارنة</button>
+    </div>
+    <div id="pv-scan-preview-wrap" class="pv-scan-preview-wrap hidden">
+        <img id="pv-scan-preview" alt="" class="pv-scan-preview">
+    </div>
+    <p id="pv-scan-status" class="pv-scan-status hidden"></p>
+    <div id="pv-scan-results" class="pv-scan-results hidden"></div>
+</section>

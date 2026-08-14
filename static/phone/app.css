@@ -1,0 +1,462 @@
+/* KASOFT — version téléphone autonome (sans style.css) */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html:has(.phone-body) {
+    overflow-x: hidden;
+}
+
+.hidden { display: none !important; }
+
+.num {
+    font-family: Inter, Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: lining-nums tabular-nums !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+}
+
+.phone-body {
+    margin: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    background: #eef2f7;
+    font-family: "Tajawal", "Segoe UI", Tahoma, Arial, sans-serif;
+    color: #1a365d;
+    min-height: 100dvh;
+    line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.phone-body-embed {
+    min-height: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.phone-body-embed .phone-header {
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.phone-body-embed .phone-fields {
+    gap: 0.55rem;
+}
+
+/* ── En-tête ── */
+.phone-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    background: linear-gradient(180deg, #185ea5 0%, #1565c0 100%);
+    color: #fff;
+    padding:
+        calc(0.65rem + env(safe-area-inset-top, 0))
+        max(0.85rem, env(safe-area-inset-right, 0))
+        0.85rem
+        max(0.85rem, env(safe-area-inset-left, 0));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.phone-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+}
+
+.phone-logo {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.phone-logout {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.phone-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+}
+
+.phone-total-label {
+    font-size: 0.88rem;
+    opacity: 0.95;
+}
+
+.phone-total-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.phone-undo-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+.phone-undo-btn:not(:disabled):active {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.phone-undo-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.phone-fab-pv {
+    position: fixed;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 999px;
+    background: #ff9800;
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+.phone-fab-pv:active {
+    background: #f57c00;
+}
+
+.phone-fab-pv.hidden {
+    display: none;
+}
+
+.phone-body .phone-main {
+    padding-bottom: 4.5rem;
+}
+
+.phone-fields {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.phone-field {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    min-width: 0;
+}
+
+.phone-field span { opacity: 0.92; }
+
+.phone-field select,
+.phone-field input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 0.7rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: #1a1a1a;
+}
+
+.phone-field select { text-overflow: ellipsis; }
+.phone-field select:disabled { opacity: 0.9; background: #f0f4f8; }
+
+.phone-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    opacity: 0.88;
+    line-height: 1.4;
+}
+
+.phone-hint-inline {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #5a6f85;
+    text-align: center;
+}
+
+.phone-locked {
+    margin: 0.55rem 0 0;
+    padding: 0.45rem 0.65rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-size: 0.82rem;
+}
+
+/* ── Contenu principal ── */
+.phone-main {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem max(0.75rem, env(safe-area-inset-right, 0)) 1rem max(0.75rem, env(safe-area-inset-left, 0));
+}
+
+.phone-parti-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+    min-width: 0;
+}
+
+/* ── Carte parti ── */
+.phone-parti-card {
+    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(24, 94, 165, 0.1);
+    border: 2px solid transparent;
+}
+
+.phone-parti-card.phone-parti-leader {
+    border-color: var(--parti-color);
+    box-shadow: 0 0 0 1px var(--parti-color), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.phone-leader-badge {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.4rem;
+    background: var(--parti-color);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    z-index: 1;
+}
+
+.phone-parti-header {
+    padding: 0.7rem 0.85rem;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.35rem 0.5rem;
+}
+
+.phone-parti-header h3 {
+    margin: 0;
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.phone-parti-total {
+    margin-right: auto;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.phone-parti-progress {
+    height: 4px;
+    background: #e0e0e0;
+}
+
+.phone-parti-progress-fill {
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.phone-parti-body {
+    padding: 0.35rem 0.85rem 0.75rem;
+}
+
+/* ── Ligne مراقب : nom + compteur (+ seulement) ── */
+.phone-mourakib-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #eef1f5;
+}
+
+.phone-mourakib-row:last-child { border-bottom: none; }
+
+.phone-mourakib-name {
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.phone-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+}
+
+.phone-counter-value {
+    min-width: 2.5rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.btn-plus {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    border: 2px solid #1565c0;
+    background: #e3f2fd;
+    color: #1565c0;
+    border-radius: 12px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.btn-plus:active { background: #bbdefb; }
+
+.btn-plus:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.phone-locked .btn-plus:disabled { opacity: 0.35; }
+
+/* ── Journal ── */
+.phone-journal-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(24, 94, 165, 0.1);
+    border: 1px solid #d4e2f0;
+    margin-bottom: 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.phone-journal-title {
+    background: #185ea5;
+    color: #fff;
+    padding: 0.65rem 0.85rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.phone-journal-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    padding: 0 0.5rem 0.75rem;
+}
+
+.phone-journal-table {
+    width: 100%;
+    min-width: 540px;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+}
+
+.phone-journal-table th {
+    background: #e3f2fd;
+    padding: 0.45rem 0.4rem;
+    border: 1px solid #bbdefb;
+    white-space: nowrap;
+}
+
+.phone-journal-table td {
+    padding: 0.45rem 0.4rem;
+    border: 1px solid #eee;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.phone-journal-table td:nth-child(2),
+.phone-journal-table td:nth-child(3),
+.phone-journal-table td:nth-child(4) {
+    white-space: normal;
+    max-width: 88px;
+    word-break: break-word;
+}
+
+.phone-journal-table tbody tr:nth-child(even) { background: #fafafa; }
+
+/* ── État vide ── */
+.phone-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.phone-empty p:first-child {
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.phone-btn-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #1565c0;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+@media (min-width: 520px) {
+    .phone-main {
+        max-width: 480px;
+        margin: 0 auto;
+    }
+
+    .phone-parti-header h3 { flex: 1 1 auto; }
+
+    .phone-mourakib-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .phone-mourakib-name {
+        text-align: right;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .phone-counter { justify-content: flex-end; }
+}

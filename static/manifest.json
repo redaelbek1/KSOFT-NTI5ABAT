@@ -4,7 +4,7 @@
   "description": "عدّ الأصوات وإدارة مكاتب الاقتراع — KASOFT",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "/mobile",
+  "start_url": "/phone",
   "display": "standalone",
   "background_color": "#f0f4f9",
   "theme_color": "#185ea5",

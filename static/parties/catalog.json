@@ -1,0 +1,268 @@
+[
+  {
+    "id": "parti-00",
+    "name": "حزب الأصالة و المعاصرة",
+    "color": "#5b7c99",
+    "logo": "/static/parties/parti-00.png",
+    "source": "ar.wikipedia.org/wiki/File:حزب_الأصالة_والمعاصرة.jpg"
+  },
+  {
+    "id": "parti-01",
+    "name": "حزب الاستقلال",
+    "color": "#c62828",
+    "logo": "/static/parties/parti-01.png",
+    "source": "commons.wikimedia.org/wiki/File:Logo - Parti de l'Istiqlal.png"
+  },
+  {
+    "id": "parti-02",
+    "name": "التجمع الوطني للأحرار",
+    "color": "#1565c0",
+    "logo": "/static/parties/parti-02.png",
+    "source": "commons.wikimedia.org/wiki/File:التجمع الوطني للأحرار.png"
+  },
+  {
+    "id": "parti-03",
+    "name": "حزب العدالة والتنمية",
+    "color": "#2e7d32",
+    "logo": "/static/parties/parti-03.png",
+    "source": "ar.wikipedia.org/wiki/File:شعار_حزب_العدالة_والتنمية_(المغرب).svg"
+  },
+  {
+    "id": "parti-04",
+    "name": "حزب الاتحاد الاشتراكي للقوات الشعبية",
+    "color": "#e91e63",
+    "logo": "/static/parties/parti-04.png",
+    "source": "commons.wikimedia.org/wiki/File:USFP-Logo.png"
+  },
+  {
+    "id": "parti-05",
+    "name": "الحركة الشعبية",
+    "color": "#f9a825",
+    "logo": "/static/parties/parti-05.png",
+    "source": "commons.wikimedia.org/wiki/File:Logo MP-Maroc.png"
+  },
+  {
+    "id": "parti-06",
+    "name": "حزب التقدم والاشتراكية",
+    "color": "#c62828",
+    "logo": "/static/parties/parti-06.png",
+    "source": "ar.wikipedia.org/wiki/File:حزب_التقدم_والاشتراكية.JPG"
+  },
+  {
+    "id": "parti-07",
+    "name": "الاتحاد الدستوري",
+    "color": "#1565c0",
+    "logo": "/static/parties/parti-07.png",
+    "source": "ar.wikipedia.org/wiki/File:شعار الاتحاد الدستوري.png"
+  },
+  {
+    "id": "parti-08",
+    "name": "الحزب الاشتراكي الموحد",
+    "color": "#00838f",
+    "logo": "/static/parties/parti-08.png",
+    "source": "commons.wikimedia.org/wiki/File:شعار الحزب الاشتراكي الموحد المغرب.png"
+  },
+  {
+    "id": "parti-09",
+    "name": "جبهة القوى الديمقراطية",
+    "color": "#2e7d32",
+    "logo": "/static/parties/parti-09.png",
+    "source": "ar.wikipedia.org/wiki/File:شعار حزب جبهة القوى الديمقراطية.png"
+  },
+  {
+    "id": "parti-10",
+    "name": "حزب الحركة الديمقراطية الاجتماعية",
+    "color": "#43a047",
+    "logo": "/static/parties/parti-10.png",
+    "source": "ar.wikipedia.org/wiki/File:شعار الحركة الديمقراطية والاجتماعية.png"
+  },
+  {
+    "id": "parti-11",
+    "name": "الاتحاد المغربي الديمقراطي",
+    "color": "#ad1457",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-12",
+    "name": "الحركة الوطنية الشعبية",
+    "color": "#c62828",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-13",
+    "name": "الحزب الاشتراكي",
+    "color": "#2e7d32",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-14",
+    "name": "الحزب الشيوعي المغربي",
+    "color": "#1565c0",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-15",
+    "name": "الحزب العمالي",
+    "color": "#f9a825",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-16",
+    "name": "الحزب المغربي الليبرالي",
+    "color": "#5b7c99",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-17",
+    "name": "الحزب الوطني الديمقراطي",
+    "color": "#8e24aa",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-18",
+    "name": "حزب الأمل",
+    "color": "#00838f",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-19",
+    "name": "حزب الإصلاح والتنمية",
+    "color": "#ef6c00",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-20",
+    "name": "حزب البيئة والتنمية",
+    "color": "#4527a0",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-21",
+    "name": "حزب البيئة والتنمية المستدامة",
+    "color": "#43a047",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-22",
+    "name": "حزب التجديد والإنصاف",
+    "color": "#6d4c41",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-23",
+    "name": "حزب الحرية والعدالة الاجتماعية",
+    "color": "#ad1457",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-24",
+    "name": "حزب الشعب",
+    "color": "#c62828",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-25",
+    "name": "حزب الشورى والاستقلال",
+    "color": "#2e7d32",
+    "logo": "/static/parties/parti-25.png",
+    "source": "ar.wikipedia.org/wiki/File:حزب الشورى والاستقلال.jpeg"
+  },
+  {
+    "id": "parti-26",
+    "name": "حزب الطليعة الديمقراطي الاشتراكي",
+    "color": "#1565c0",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-27",
+    "name": "حزب العمل",
+    "color": "#f9a825",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-28",
+    "name": "حزب العهد",
+    "color": "#5b7c99",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-29",
+    "name": "حزب العهد الديمقراطي",
+    "color": "#8e24aa",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-30",
+    "name": "حزب القوات المواطنة",
+    "color": "#00838f",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-31",
+    "name": "حزب المؤتمر الوطني الاتحادي",
+    "color": "#ef6c00",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-32",
+    "name": "حزب المجتمع الديمقراطي",
+    "color": "#4527a0",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-33",
+    "name": "حزب النهضة و الفضيلة",
+    "color": "#43a047",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-34",
+    "name": "حزب الوحدة والديموقراطية",
+    "color": "#6d4c41",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-35",
+    "name": "حزب الوسط الاجتماعي",
+    "color": "#ad1457",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-36",
+    "name": "حزب اليسار الأخضر",
+    "color": "#c62828",
+    "logo": null,
+    "source": null
+  },
+  {
+    "id": "parti-37",
+    "name": "فيدرالية اليسار الديمقراطي",
+    "color": "#2e7d32",
+    "logo": null,
+    "source": null
+  }
+]

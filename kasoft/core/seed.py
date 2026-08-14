@@ -34,9 +34,24 @@ def demo_state():
             },
         ],
         "partis": [
-            {"id": "demo-p1", "name": "حزب الأصالة والمعاصرة", "color": PARTY_COLORS[0]},
-            {"id": "demo-p2", "name": "حزب الاستقلال", "color": PARTY_COLORS[1]},
-            {"id": "demo-p3", "name": "حزب التجمع الوطني للأحرار", "color": PARTY_COLORS[2]},
+            {
+                "id": "demo-p1",
+                "name": "حزب الأصالة والمعاصرة",
+                "color": PARTY_COLORS[0],
+                "logo": "/static/parties/parti-00.png",
+            },
+            {
+                "id": "demo-p2",
+                "name": "حزب الاستقلال",
+                "color": PARTY_COLORS[1],
+                "logo": "/static/parties/parti-01.png",
+            },
+            {
+                "id": "demo-p3",
+                "name": "حزب التجمع الوطني للأحرار",
+                "color": PARTY_COLORS[2],
+                "logo": "/static/parties/parti-02.png",
+            },
         ],
         "mourakibs": {
             "demo-p1": [

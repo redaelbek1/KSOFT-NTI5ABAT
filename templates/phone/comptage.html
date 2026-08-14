@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+    <meta name="theme-color" content="#185ea5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>عدّ الأصوات — كاسوفت</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='phone/app.css') }}?v={{ asset_version }}-ph">
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared/pv-scan.css') }}?v={{ asset_version }}-ph">
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared/bureau-counters.css') }}?v={{ asset_version }}-ph">
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared/party-logos.css') }}?v={{ asset_version }}-ph">
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared/parties-table.css') }}?v={{ asset_version }}-ph">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-512.png') }}">
+</head>
+<body class="phone-body{% if kasoft_embed %} phone-body-embed{% endif %}">
+    <header class="phone-header">
+        <div class="phone-header-top">
+            <span class="phone-logo">كاسوفت</span>
+            {% if not kasoft_embed %}
+            <a href="{{ url_for('logout') }}" class="phone-logout" data-i18n="nav_logout">خروج</a>
+            {% endif %}
+        </div>
+        <div class="phone-total-row">
+            <span class="phone-total-label" data-i18n="cpt_total">مجموع الأصوات</span>
+            <span class="phone-total-value num" id="total-votes" lang="en-US" dir="ltr">0</span>
+        </div>
+        {% include 'shared/bureau_counters.html' %}
+        <div class="phone-fields">
+            <label class="phone-field">
+                <span data-i18n="cpt_bureau">المكتب</span>
+                <select id="comptage-bureau"></select>
+            </label>
+            <label class="phone-field">
+                <span data-i18n="cpt_actif">المراقب النشط</span>
+                <input type="text" id="mourakib-actif" data-i18n-placeholder="cpt_actif_ph" placeholder="الاسم الكامل للمراقب">
+            </label>
+        </div>
+        <p id="scoped-bureau-hint" class="phone-hint hidden" data-i18n="cpt_scoped_bureau_hint">مكتبك المعيّن — لا يمكن التبديل</p>
+        <p id="comptage-locked-banner" class="phone-locked hidden" data-i18n="cpt_locked">المكتب مغلق — العرض فقط</p>
+    </header>
+
+    <main class="phone-main">
+        <div id="comptage-empty" class="phone-empty hidden">
+            <p data-i18n="cpt_setup_title">الإعداد مطلوب</p>
+            <p class="phone-hint" data-i18n="cpt_setup_step3">عد هنا بعد إعداد المكاتب والأحزاب</p>
+            {% if kasoft_is_admin %}
+            <a href="{{ url_for('configuration') }}" class="phone-btn-link" data-i18n="cpt_go_config">الإعدادات</a>
+            {% endif %}
+        </div>
+
+        <div id="comptage-app" class="hidden">
+            {% include 'shared/pv_scan_panel.html' %}
+            <section class="phone-parti-grid" id="parti-grid"></section>
+
+            <section class="phone-journal-card">
+                <div class="phone-journal-title" data-i18n="cpt_journal">سجل العمليات (آخر 50 إجراء)</div>
+                <div class="phone-journal-wrap">
+                    <table class="phone-journal-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="th_time">الوقت</th>
+                                <th data-i18n="th_actif">المراقب النشط</th>
+                                <th data-i18n="th_parti">الحزب</th>
+                                <th data-i18n="th_mourakib">اللائحة</th>
+                                <th data-i18n="th_action">الإجراء</th>
+                                <th data-i18n="th_total">المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journal-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <button type="button" id="btn-open-pv-scan" class="phone-fab-pv" data-i18n="pv_scan_pick_phone" aria-label="photo PV">
+        📷 تصوير المحضر
+    </button>
+    <input type="file" id="pv-scan-input-camera" accept="image/*" capture="environment" class="pv-scan-input-hidden">
+
+    <script>
+        window.KASOFT_ROLE = {{ kasoft_role|tojson }};
+        window.KASOFT_SCOPED_BUREAU_ID = {{ kasoft_bureau_id|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='i18n.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='store.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='shared/bureau-counters.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='shared/pv-scan.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='shared/party-logos.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='shared/parties-table.js') }}?v={{ asset_version }}-ph"></script>
+    <script src="{{ url_for('static', filename='phone/app.js') }}?v={{ asset_version }}-ph"></script>
+</body>
+</html>

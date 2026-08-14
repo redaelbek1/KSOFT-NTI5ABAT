@@ -169,7 +169,9 @@ def record_vote(data, bureau_id, parti_id, mourakib_id, delta, actif):
     parti_name = next(
         (p["name"] for p in state.get("partis", []) if p["id"] == parti_id), ""
     )
-    mourakib_name = next(
+    from kasoft.core.lists import list_label
+
+    mourakib_name = list_label(mourakib_id) or next(
         (
             m["name"]
             for m in state.get("mourakibs", {}).get(parti_id, [])
@@ -189,6 +191,8 @@ def record_vote(data, bureau_id, parti_id, mourakib_id, delta, actif):
             "time": datetime.now().isoformat(),
             "bureauId": bureau_id,
             "actif": actif,
+            "partiId": parti_id,
+            "mourakibId": mourakib_id,
             "parti": parti_name,
             "mourakib": mourakib_name,
             "action": "+1" if delta > 0 else "-1",

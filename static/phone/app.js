@@ -1,4 +1,4 @@
-/** Version mobile — cartes des partis + journal uniquement */
+/** Version téléphone — tableau حزب × لائحة + journal — + uniquement, undo dernier + */
 let state = KasoftStore.loadState();
 
 function tr(key) {
@@ -15,8 +15,6 @@ const els = {
     journal: document.getElementById("journal-body"),
     lockedBanner: document.getElementById("comptage-locked-banner"),
 };
-
-const isAdmin = () => (window.KASOFT_ROLE || "admin") === "admin";
 
 function scopedBureauId() {
     return window.KASOFT_SCOPED_BUREAU_ID || null;
@@ -66,6 +64,36 @@ function isLocked() {
     return KasoftStore.isBureauLocked(state, currentBureauId());
 }
 
+function resolveJournalTarget(entry) {
+    if (entry.partiId && entry.mourakibId) {
+        return { partiId: entry.partiId, mourakibId: entry.mourakibId };
+    }
+    const parti = state.partis.find((p) => p.name === entry.parti);
+    if (!parti) return null;
+    const list = KasoftStore.VOTE_LISTS.find((l) => l.label === entry.mourakib);
+    if (!list) return null;
+    return { partiId: parti.id, mourakibId: list.id };
+}
+
+function findLastPlusEntry(bureauId) {
+    for (const j of state.journal || []) {
+        if (j.bureauId !== bureauId) continue;
+        if (j.action === "-1" || j.action === "تراجع") return null;
+        if (j.action !== "+1") continue;
+        const ids = resolveJournalTarget(j);
+        if (!ids) return null;
+        const count = KasoftStore.getMourakibCount(
+            state,
+            bureauId,
+            ids.partiId,
+            ids.mourakibId
+        );
+        if (count > 0) return { entry: j, ...ids };
+        return null;
+    }
+    return null;
+}
+
 function applyVoteLocally(partiId, mourakibId, delta, actif) {
     const bureauId = currentBureauId();
     const bucket = KasoftStore.ensureVotes(state, bureauId);
@@ -76,34 +104,35 @@ function applyVoteLocally(partiId, mourakibId, delta, actif) {
 
     bucket[partiId][mourakibId] = next;
     const parti = state.partis.find((p) => p.id === partiId);
-    const mourakib = (state.mourakibs[partiId] || []).find((m) => m.id === mourakibId);
     KasoftStore.addJournalEntry(state, {
         time: new Date().toISOString(),
         bureauId,
         actif,
+        partiId,
+        mourakibId,
         parti: parti?.name || "",
-        mourakib: mourakib?.name || "",
-        action: delta > 0 ? "+1" : "-1",
+        mourakib: KasoftStore.voteListLabel(mourakibId),
+        action: delta > 0 ? "+1" : "تراجع",
         total: next,
         partiTotal: KasoftStore.getPartiTotal(state, bureauId, partiId),
     });
     return true;
 }
 
-async function changeVote(partiId, mourakibId, delta) {
+async function changeVote(partiId, mourakibId, delta, actifOverride) {
     if (isLocked()) {
         alert(tr("cpt_locked") || "المكتب مغلق — لا يمكن تعديل الأصوات");
-        return;
+        return false;
     }
-    const actif = requireActif();
-    if (!actif) return;
+    const actif = actifOverride || requireActif();
+    if (!actif) return false;
 
     const bureauId = currentBureauId();
     const bureau = currentBureau();
     const part = KasoftStore.getParticipation(state, bureauId);
     if (delta > 0 && bureau?.inscrits && part.valid + part.blancs + part.nuls + 1 > bureau.inscrits) {
         alert(tr("cpt_over_inscrits") || "لا يمكن تجاوز عدد المسجلين");
-        return;
+        return false;
     }
 
     try {
@@ -114,23 +143,34 @@ async function changeVote(partiId, mourakibId, delta) {
             state = KasoftStore.applyServerState(state, data.state, { authoritativeVotes: true });
         }
         render();
-        return;
+        return true;
     } catch {
         /* hors-ligne */
     }
 
-    if (!applyVoteLocally(partiId, mourakibId, delta, actif)) return;
+    if (!applyVoteLocally(partiId, mourakibId, delta, actif)) return false;
     persist();
     render();
+    return true;
+}
+
+async function performUndo(actif) {
+    const last = findLastPlusEntry(currentBureauId());
+    if (!last) {
+        alert(tr("phone_undo_none") || "لا يوجد + لحذفه");
+        return false;
+    }
+    return changeVote(last.partiId, last.mourakibId, -1, actif);
 }
 
 function renderLockedState() {
     const locked = isLocked();
     if (els.lockedBanner) els.lockedBanner.classList.toggle("hidden", !locked);
-    if (els.grid) els.grid.classList.toggle("comptage-locked", locked);
-    els.grid?.querySelectorAll(".btn-counter").forEach((btn) => {
+    if (els.grid) els.grid.classList.toggle("phone-locked", locked);
+    els.grid?.querySelectorAll(".ptable-plus").forEach((btn) => {
         btn.disabled = locked;
     });
+    bureauCounters?.refresh();
 }
 
 function renderTotals() {
@@ -149,48 +189,12 @@ function renderTotals() {
 }
 
 function renderGrid(leaderId) {
-    const bureauId = currentBureauId();
-
-    els.grid.innerHTML = state.partis
-        .map((p) => {
-            const total = KasoftStore.getPartiTotal(state, bureauId, p.id);
-            const inscrits = currentBureau()?.inscrits || 0;
-            const pct = inscrits ? Math.min(100, Math.round((total / inscrits) * 100)) : 0;
-            const mourakibs = state.mourakibs[p.id] || [];
-            const isLeader = p.id === leaderId && total > 0;
-
-            const mourakibRows = mourakibs
-                .map((m) => {
-                    const count = KasoftStore.getMourakibCount(state, bureauId, p.id, m.id);
-                    const disabled = isLocked() ? " disabled" : "";
-                    return `
-                    <div class="mourakib-row">
-                        <span class="mourakib-name">${m.name}</span>
-                        <div class="counter">
-                            <button type="button" class="btn-counter"${disabled} data-vote="${p.id}:${m.id}:-1">−</button>
-                            <span class="counter-value num" lang="en-US" dir="ltr">${count}</span>
-                            <button type="button" class="btn-counter btn-counter-plus"${disabled} data-vote="${p.id}:${m.id}:1">+</button>
-                        </div>
-                    </div>`;
-                })
-                .join("");
-
-            return `
-            <div class="parti-card${isLeader ? " parti-leader" : ""}" style="--parti-color:${p.color}">
-                ${isLeader ? '<span class="leader-badge">في الصدارة</span>' : ""}
-                <div class="parti-card-header" style="background:${p.color}">
-                    <h3>${p.name}</h3>
-                    <span class="parti-total"><span class="num" lang="en-US" dir="ltr">${total}</span> صوت</span>
-                </div>
-                <div class="parti-progress">
-                    <div class="parti-progress-fill" style="width:${pct}%;background:${p.color}"></div>
-                </div>
-                <div class="parti-card-body">
-                    ${mourakibRows || `<p class="hint">${tr("cpt_no_mourakibs")}</p>`}
-                </div>
-            </div>`;
-        })
-        .join("");
+    els.grid.innerHTML = KasoftPartiesTable.render({
+        state,
+        bureauId: currentBureauId(),
+        locked: isLocked(),
+        leaderId,
+    });
 }
 
 function renderJournal() {
@@ -209,7 +213,7 @@ function renderJournal() {
             <td class="num" lang="en-US" dir="ltr">${j.total}</td>
         </tr>`
             )
-            .join("") || `<tr><td colspan="6" class="hint">لا توجد عمليات بعد</td></tr>`;
+            .join("") || `<tr><td colspan="6" class="phone-hint-inline">لا توجد عمليات بعد</td></tr>`;
 }
 
 function renderBureauSelect() {
@@ -237,6 +241,7 @@ function render() {
     if (!isReady()) {
         els.empty.classList.remove("hidden");
         els.app.classList.add("hidden");
+        bureauCounters?.refresh();
         return;
     }
     els.empty.classList.add("hidden");
@@ -249,7 +254,38 @@ function render() {
     renderGrid(leaderId);
     renderJournal();
     renderLockedState();
+    pvScan?.refreshVisibility?.();
+    document.getElementById("btn-open-pv-scan")?.classList.toggle("hidden", !isReady());
 }
+
+let pvScan = null;
+let bureauCounters = null;
+
+function initBureauCounters() {
+    if (bureauCounters || !window.KasoftBureauCounters) return;
+    bureauCounters = KasoftBureauCounters.init({
+        getState: () => state,
+        persist,
+        getBureauId: currentBureauId,
+        isLocked,
+        requireActif,
+        canUndo: () => !!findLastPlusEntry(currentBureauId()),
+        onUndo: performUndo,
+        onRender: () => renderJournal(),
+    });
+}
+
+function initPvScan() {
+    if (pvScan || !window.KasoftPvScan) return;
+    pvScan = KasoftPvScan.init({
+        getState: () => state,
+        getBureauId: currentBureauId,
+        isReady,
+    });
+}
+
+initPvScan();
+initBureauCounters();
 
 els.bureau.addEventListener("change", () => {
     persist();
@@ -259,8 +295,9 @@ els.bureau.addEventListener("change", () => {
 els.mourakibActif.addEventListener("change", persist);
 
 els.grid.addEventListener("click", (e) => {
-    const raw = e.target.dataset.vote;
-    if (!raw) return;
+    const btn = e.target.closest("[data-vote]");
+    if (!btn) return;
+    const raw = btn.dataset.vote;
     const [partiId, mourakibId, delta] = raw.split(":");
     changeVote(partiId, mourakibId, parseInt(delta, 10));
 });
@@ -283,6 +320,8 @@ KasoftStore.loadStateAsync().then((s) => {
     state = s;
     enforceScopedBureau();
     initFromUrl();
+    initPvScan();
+    initBureauCounters();
     render();
 });
 

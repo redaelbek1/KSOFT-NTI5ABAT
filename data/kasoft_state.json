@@ -11,7 +11,9 @@
       "code": "CA-014",
       "centre": "إعدادية ابن رشد",
       "adresse": "المعاريف — زنقة 12",
-      "pin": ""
+      "pin": "0014",
+      "lat": null,
+      "lng": null
     },
     {
       "id": "demo-b1",
@@ -24,23 +26,28 @@
       "code": "RB-001",
       "centre": "ثانوية الحسن الثاني",
       "adresse": "حي أكدال — شارع محمد الخامس",
-      "pin": ""
+      "pin": "0001",
+      "lat": null,
+      "lng": null
     }
   ],
   "partis": [
     {
       "color": "#5b7c99",
       "id": "demo-p1",
+      "logo": "/static/parties/parti-00.png",
       "name": "حزب الأصالة والمعاصرة"
     },
     {
       "color": "#c62828",
       "id": "demo-p2",
+      "logo": "/static/parties/parti-01.png",
       "name": "حزب الاستقلال"
     },
     {
-      "color": "#2e7d32",
+      "color": "#1565c0",
       "id": "demo-p3",
+      "logo": "/static/parties/parti-02.png",
       "name": "حزب التجمع الوطني للأحرار"
     }
   ],
@@ -66,27 +73,28 @@
         "id": "demo-m4",
         "name": "أحمد الإدريسي"
       }
-    ]
+    ],
+    "msstvcsdfl9sx": []
   },
   "votes": {
     "demo-b2": {
       "demo-p2": {
-        "demo-m3": 35
+        "liste-regionale": 35
       },
       "demo-p1": {
-        "demo-m1": 20
+        "liste-regionale": 20
       }
     },
     "demo-b1": {
       "demo-p3": {
-        "demo-m4": 15
+        "liste-regionale": 15
       },
       "demo-p2": {
-        "demo-m3": 35
+        "liste-regionale": 35
       },
       "demo-p1": {
-        "demo-m2": 13,
-        "demo-m1": 48
+        "liste-nationale": 0,
+        "liste-regionale": 60
       }
     }
   },
@@ -106,471 +114,494 @@
   },
   "journal": [
     {
-      "time": "2026-07-06T12:05:17.503316",
+      "time": "2026-08-14T18:46:53.726527",
       "bureauId": "demo-b1",
       "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 48,
-      "partiTotal": 61
-    },
-    {
-      "time": "2026-07-06T12:05:16.660371",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 47,
-      "partiTotal": 60
-    },
-    {
-      "time": "2026-07-06T12:05:14.173486",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 46,
-      "partiTotal": 59
-    },
-    {
-      "time": "2026-07-06T11:57:56.155914",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 47,
-      "partiTotal": 60
-    },
-    {
-      "time": "2026-07-06T11:57:55.223323",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 48,
-      "partiTotal": 61
-    },
-    {
-      "time": "2026-07-06T11:57:52.724528",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 49,
-      "partiTotal": 62
-    },
-    {
-      "time": "2026-07-06T11:57:49.593920",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 48,
-      "partiTotal": 61
-    },
-    {
-      "time": "2026-07-06T11:57:48.286263",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 47,
-      "partiTotal": 60
-    },
-    {
-      "time": "2026-07-06T11:55:10.986374",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 47,
-      "partiTotal": 59
-    },
-    {
-      "time": "2026-07-06T11:55:06.675241",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 48,
-      "partiTotal": 60
-    },
-    {
-      "time": "2026-07-06T11:44:31.430912",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
+      "partiId": "demo-p2",
+      "mourakibId": "liste-regionale",
       "parti": "حزب الاستقلال",
-      "mourakib": "فاطمة الزهراء",
+      "mourakib": "لائحة جهوية",
       "action": "-1",
-      "total": 34,
-      "partiTotal": 34
-    },
-    {
-      "time": "2026-07-06T11:44:30.456649",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الاستقلال",
-      "mourakib": "فاطمة الزهراء",
-      "action": "+1",
       "total": 35,
       "partiTotal": 35
     },
     {
-      "time": "2026-07-06T11:44:27.435265",
+      "time": "2026-08-14T18:46:51.771034",
       "bureauId": "demo-b1",
       "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "سارة بنعلي",
-      "action": "-1",
-      "total": 12,
-      "partiTotal": 58
-    },
-    {
-      "time": "2026-07-06T11:44:26.300784",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "سارة بنعلي",
+      "partiId": "demo-p2",
+      "mourakibId": "liste-regionale",
+      "parti": "حزب الاستقلال",
+      "mourakib": "لائحة جهوية",
       "action": "+1",
-      "total": 13,
-      "partiTotal": 59
+      "total": 36,
+      "partiTotal": 36
     },
     {
-      "time": "2026-07-06T11:44:21.176948",
+      "time": "2026-08-14T18:46:31.141555",
       "bureauId": "demo-b1",
+      "actif": "محمد العلوي",
+      "partiId": "demo-p1",
+      "mourakibId": "liste-nationale",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "لائحة وطنية",
+      "action": "-1",
+      "total": 0,
+      "partiTotal": 60
+    },
+    {
+      "time": "2026-08-14T18:46:29.568879",
+      "bureauId": "demo-b1",
+      "actif": "محمد العلوي",
+      "partiId": "demo-p1",
+      "mourakibId": "liste-nationale",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "لائحة وطنية",
+      "action": "+1",
+      "total": 1,
+      "partiTotal": 61
+    },
+    {
+      "time": "2026-08-13T23:41:37.851015",
+      "bureauId": "demo-b2",
       "actif": "محمد العلوي",
       "parti": "حزب الأصالة والمعاصرة",
       "mourakib": "محمد العلوي",
       "action": "-1",
-      "total": 46,
-      "partiTotal": 58
+      "total": 20,
+      "partiTotal": 20
     },
     {
-      "time": "2026-07-06T11:44:18.184242",
+      "time": "2026-08-13T23:41:35.923396",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "محمد العلوي",
+      "action": "+1",
+      "total": 21,
+      "partiTotal": 21
+    },
+    {
+      "time": "2026-08-13T23:41:29.343886",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "محمد العلوي",
+      "action": "-1",
+      "total": 20,
+      "partiTotal": 20
+    },
+    {
+      "time": "2026-08-13T23:41:27.166807",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "محمد العلوي",
+      "action": "+1",
+      "total": 21,
+      "partiTotal": 21
+    },
+    {
+      "time": "2026-08-13T23:39:02.077801",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "محمد العلوي",
+      "action": "-1",
+      "total": 20,
+      "partiTotal": 20
+    },
+    {
+      "time": "2026-08-13T23:38:59.690976",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "mourakib": "محمد العلوي",
+      "action": "+1",
+      "total": 21,
+      "partiTotal": 21
+    },
+    {
+      "time": "2026-08-13T23:21:47.896188",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الاستقلال",
+      "mourakib": "فاطمة الزهراء",
+      "action": "-1",
+      "total": 35,
+      "partiTotal": 35
+    },
+    {
+      "time": "2026-08-13T22:39:02.110Z",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "—",
+      "mourakib": "—",
+      "action": "إلغاء",
+      "total": 1
+    },
+    {
+      "time": "2026-08-13T22:21:58.917Z",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "—",
+      "mourakib": "—",
+      "action": "تفاوض",
+      "total": 1
+    },
+    {
+      "time": "2026-08-13T22:21:47.920Z",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "—",
+      "mourakib": "—",
+      "action": "إلغاء",
+      "total": 1
+    },
+    {
+      "time": "2026-08-13T12:48:28.104828",
+      "bureauId": "demo-b2",
+      "actif": "محمد العلوي",
+      "parti": "حزب الاستقلال",
+      "mourakib": "فاطمة الزهراء",
+      "action": "+1",
+      "total": 36,
+      "partiTotal": 36
+    },
+    {
+      "time": "2026-08-13T12:30:56.128869",
       "bureauId": "demo-b1",
       "actif": "محمد العلوي",
       "parti": "حزب الأصالة والمعاصرة",
       "mourakib": "محمد العلوي",
       "action": "-1",
       "total": 47,
-      "partiTotal": 59
-    },
-    {
-      "time": "2026-07-06T11:44:16.286165",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 48,
       "partiTotal": 60
     },
     {
-      "time": "2026-07-06T11:08:54.890993",
-      "bureauId": "demo-b1",
       "actif": "محمد العلوي",
-      "parti": "حزب الاستقلال",
-      "mourakib": "فاطمة الزهراء",
+      "action": "-1",
+      "bureauId": "demo-b2",
+      "mourakib": "سارة بنعلي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 20,
+      "time": "2026-08-13T12:03:26.872086",
+      "total": 0
+    },
+    {
+      "actif": "محمد العلوي",
       "action": "+1",
+      "bureauId": "demo-b2",
+      "mourakib": "سارة بنعلي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 21,
+      "time": "2026-08-13T12:03:25.319450",
+      "total": 1
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 61,
+      "time": "2026-07-06T12:05:17.503316",
+      "total": 48
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 60,
+      "time": "2026-07-06T12:05:16.660371",
+      "total": 47
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 59,
+      "time": "2026-07-06T12:05:14.173486",
+      "total": 46
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 60,
+      "time": "2026-07-06T11:57:56.155914",
+      "total": 47
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 61,
+      "time": "2026-07-06T11:57:55.223323",
+      "total": 48
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 62,
+      "time": "2026-07-06T11:57:52.724528",
+      "total": 49
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 61,
+      "time": "2026-07-06T11:57:49.593920",
+      "total": 48
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 60,
+      "time": "2026-07-06T11:57:48.286263",
+      "total": 47
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 59,
+      "time": "2026-07-06T11:55:10.986374",
+      "total": 47
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 60,
+      "time": "2026-07-06T11:55:06.675241",
+      "total": 48
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "partiTotal": 34,
+      "time": "2026-07-06T11:44:31.430912",
       "total": 34
     },
     {
-      "time": "2026-07-06T11:08:54.098551",
-      "bureauId": "demo-b1",
       "actif": "محمد العلوي",
-      "parti": "حزب الاستقلال",
+      "action": "+1",
+      "bureauId": "demo-b1",
       "mourakib": "فاطمة الزهراء",
-      "action": "-1",
-      "total": 33
-    },
-    {
-      "time": "2026-07-06T11:08:50.650226",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 54
-    },
-    {
-      "time": "2026-07-06T11:08:49.161197",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 55
-    },
-    {
-      "time": "2026-07-06T11:08:48.132877",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 54
-    },
-    {
-      "time": "2026-07-06T11:08:46.621619",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 55
-    },
-    {
-      "time": "2026-07-06T11:08:46.405609",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 56
-    },
-    {
-      "time": "2026-07-06T11:08:43.825688",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 55
-    },
-    {
-      "time": "2026-07-06T11:08:43.132662",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 56
-    },
-    {
-      "time": "2026-07-06T11:08:39.427441",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 55
-    },
-    {
-      "time": "2026-07-06T11:08:36.834071",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 56
-    },
-    {
-      "time": "2026-07-06T11:08:35.415596",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 55
-    },
-    {
-      "time": "2026-07-06T11:08:34.424730",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 56
-    },
-    {
-      "time": "2026-07-06T11:08:33.372435",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 57
-    },
-    {
-      "time": "2026-07-06T11:08:20.209635",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 58
-    },
-    {
-      "time": "2026-07-06T11:08:19.142004",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 59
-    },
-    {
-      "time": "2026-07-03T16:21:17.760940",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 58
-    },
-    {
-      "time": "2026-07-03T16:21:16.274834",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 57
-    },
-    {
-      "time": "2026-07-03T16:21:14.235676",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 58
-    },
-    {
-      "time": "2026-07-03T16:21:13.618693",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "+1",
-      "total": 57
-    },
-    {
-      "time": "2026-07-03T16:21:12.857167",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 56
-    },
-    {
-      "time": "2026-07-03T16:21:12.116867",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "mourakib": "محمد العلوي",
-      "action": "-1",
-      "total": 57
-    },
-    {
-      "time": "2026-07-03T16:21:09.726678",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "mourakib": "أحمد الإدريسي",
-      "action": "+1",
-      "total": 15
-    },
-    {
-      "time": "2026-07-03T16:21:08.597749",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "mourakib": "أحمد الإدريسي",
-      "action": "+1",
-      "total": 14
-    },
-    {
-      "time": "2026-07-03T16:21:06.961250",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "mourakib": "أحمد الإدريسي",
-      "action": "-1",
-      "total": 13
-    },
-    {
-      "time": "2026-07-03T16:21:05.991374",
-      "bureauId": "demo-b1",
-      "actif": "محمد العلوي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "mourakib": "أحمد الإدريسي",
-      "action": "-1",
-      "total": 14
-    },
-    {
-      "actif": "Test",
-      "action": "+1",
-      "bureauId": "demo-b1",
-      "mourakib": "محمد العلوي",
-      "parti": "حزب الأصالة والمعاصرة",
-      "time": "2026-07-02T12:17:28.969615",
-      "total": 58
+      "parti": "حزب الاستقلال",
+      "partiTotal": 35,
+      "time": "2026-07-06T11:44:30.456649",
+      "total": 35
     },
     {
       "actif": "محمد العلوي",
       "action": "-1",
       "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:16.528Z",
-      "total": 8
-    },
-    {
-      "actif": "محمد العلوي",
-      "action": "-1",
-      "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:16.190Z",
-      "total": 9
-    },
-    {
-      "actif": "محمد العلوي",
-      "action": "-1",
-      "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:15.765Z",
-      "total": 10
-    },
-    {
-      "actif": "محمد العلوي",
-      "action": "-1",
-      "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:15.089Z",
-      "total": 11
-    },
-    {
-      "actif": "محمد العلوي",
-      "action": "-1",
-      "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:14.908Z",
+      "mourakib": "سارة بنعلي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 58,
+      "time": "2026-07-06T11:44:27.435265",
       "total": 12
     },
     {
       "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "سارة بنعلي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 59,
+      "time": "2026-07-06T11:44:26.300784",
+      "total": 13
+    },
+    {
+      "actif": "محمد العلوي",
       "action": "-1",
       "bureauId": "demo-b1",
-      "mourakib": "أحمد الإدريسي",
-      "parti": "حزب التجمع الوطني للأحرار",
-      "time": "2026-07-02T10:55:14.699Z",
-      "total": 13
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 58,
+      "time": "2026-07-06T11:44:21.176948",
+      "total": 46
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 59,
+      "time": "2026-07-06T11:44:18.184242",
+      "total": 47
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "partiTotal": 60,
+      "time": "2026-07-06T11:44:16.286165",
+      "total": 48
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-06T11:08:54.890993",
+      "total": 34
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "فاطمة الزهراء",
+      "parti": "حزب الاستقلال",
+      "time": "2026-07-06T11:08:54.098551",
+      "total": 33
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:50.650226",
+      "total": 54
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:49.161197",
+      "total": 55
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:48.132877",
+      "total": 54
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:46.621619",
+      "total": 55
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:46.405609",
+      "total": 56
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:43.825688",
+      "total": 55
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:43.132662",
+      "total": 56
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:39.427441",
+      "total": 55
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "+1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:36.834071",
+      "total": 56
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:35.415596",
+      "total": 55
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:34.424730",
+      "total": 56
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:33.372435",
+      "total": 57
+    },
+    {
+      "actif": "محمد العلوي",
+      "action": "-1",
+      "bureauId": "demo-b1",
+      "mourakib": "محمد العلوي",
+      "parti": "حزب الأصالة والمعاصرة",
+      "time": "2026-07-06T11:08:20.209635",
+      "total": 58
     }
   ],
   "currentBureau": "demo-b1",

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KASOFT — Présentation PC + Phone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='demo.css') }}?v={{ asset_version }}">
+</head>
+<body class="demo-page">
+    <header class="demo-toolbar">
+        <div class="demo-toolbar-brand">
+            <span class="demo-logo">KASOFT</span>
+            <h1>Présentation — PC &amp; Phone</h1>
+        </div>
+        <div class="demo-toolbar-meta">
+            {% if bureau %}
+            <span class="demo-badge">Bureau : {{ bureau }}</span>
+            {% endif %}
+            <a class="demo-link" href="{{ pc_url }}" target="_blank" rel="noopener">PC seul ↗</a>
+            <a class="demo-link" href="{{ phone_url }}" target="_blank" rel="noopener">Phone seul ↗</a>
+            <button type="button" id="demo-fullscreen" class="demo-btn">Plein écran</button>
+        </div>
+    </header>
+
+    <div class="demo-split">
+        <section class="demo-pane demo-pane-pc" aria-label="Version PC">
+            <div class="demo-pane-head">
+                <span class="demo-pane-label">Version PC</span>
+                <span class="demo-pane-hint">Clavier + souris · fichier PV</span>
+            </div>
+            <iframe
+                class="demo-iframe demo-iframe-pc"
+                src="{{ pc_url }}"
+                title="KASOFT comptage PC"
+                loading="lazy"
+            ></iframe>
+        </section>
+
+        <section class="demo-pane demo-pane-phone" aria-label="Version Phone">
+            <div class="demo-pane-head">
+                <span class="demo-pane-label">Version Phone</span>
+                <span class="demo-pane-hint">Tactile · appareil photo PV</span>
+            </div>
+            <div class="phone-shell">
+                <div class="phone-shell-notch"></div>
+                <iframe
+                    class="demo-iframe demo-iframe-phone"
+                    src="{{ phone_url }}"
+                    title="KASOFT comptage Phone"
+                    loading="lazy"
+                ></iframe>
+            </div>
+        </section>
+    </div>
+
+    <script>
+    document.getElementById("demo-fullscreen")?.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen?.();
+        } else {
+            document.exitFullscreen?.();
+        }
+    });
+    </script>
+</body>
+</html>

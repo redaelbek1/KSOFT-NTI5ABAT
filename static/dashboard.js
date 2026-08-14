@@ -204,7 +204,7 @@ function renderPartiRank() {
                 (p, i) => `
         <div class="rank-row">
             <span class="rank-pos num" lang="en-US">${i + 1}</span>
-            <span class="parti-dot" style="background:${p.color}"></span>
+            ${KasoftLogos.badge(p, { className: "parti-logo-sm" })}
             <span class="rank-name">${p.name}</span>
             <div class="rank-bar"><div class="rank-bar-fill" style="width:${max ? Math.round((p.total / max) * 100) : 0}%;background:${p.color}"></div></div>
             <span class="num rank-total" lang="en-US">${p.total}</span>

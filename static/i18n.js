@@ -67,7 +67,11 @@ const I18N = {
         cfg_partis: "الأحزاب السياسية",
         cfg_mourakibs: "المراقبون (حسب الحزب)",
         cfg_add_bureau: "إضافة مكتب",
+        cfg_locate: "تحديد الموقع الآن",
+        cfg_locating: "جاري تحديد الموقع…",
+        cfg_located: "تم تحديد موقع المكتب",
         cfg_add_parti: "إضافة حزب",
+        cfg_pick_logo: "اختر صورة الحزب",
         cfg_add_mourakib: "إضافة مراقب",
         cfg_save: "حفظ الإعدادات",
         cfg_cancel: "إلغاء التغييرات",
@@ -144,16 +148,51 @@ const I18N = {
         cpt_journal_all_bureaux: "جميع المكاتب",
         cpt_close_hint: "انتهى العد؟ غيّر الحالة إلى <strong>مغلق</strong> ثم صدّر المحضر.",
         cpt_locked: "المكتب مغلق — العرض فقط. يمكن تصدير المحضر.",
+        phone_undo_last: "↩ تراجع — حذف آخر +",
+        phone_undo_none: "لا يوجد + لحذفه",
+        pv_scan_title: "📷 مقارنة المحضر (صورة)",
+        pv_scan_hint: "التقط صورة للمحضر أو اختر صورة — يتم استخراج الأرقام ومقارنتها مع التطبيق",
+        pv_scan_pick: "📷 التقاط / اختيار صورة",
+        pv_scan_pick_pc: "📁 اختيار صورة المحضر",
+        pv_scan_pick_phone: "📷 تصوير المحضر",
+        pv_scan_photo_ok: "تمت الصورة — جاري المقارنة…",
+        pv_scan_photo_pc: "تم اختيار الصورة — اضغط «مقارنة»",
+        pv_scan_run: "مقارنة",
+        pv_scan_loading: "جاري قراءة الصورة…",
+        pv_scan_done: "انتهت المقارنة",
+        pv_scan_error: "تعذر قراءة الصورة — جرب صورة أوضح",
+        pv_scan_ok: "✓ المحضر مطابق للتطبيق",
+        pv_scan_mismatch: "✗ اختلافات — راجع الأرقام",
+        pv_scan_no_numbers: "⚠ لم يُستخرج أي رقم — حاول صورة أوضح",
+        pv_scan_partial: "⚠ مقارنة جزئية — بعض الأرقام غير مقروءة",
+        pv_scan_col_field: "البند",
+        pv_scan_col_app: "التطبيق",
+        pv_scan_col_photo: "المحضر",
+        pv_scan_col_match: "مطابق",
+        pv_scan_valid: "مجموع الأصوات الصحيحة",
+        pv_scan_blancs: "أوراق بيضاء",
+        pv_scan_nuls: "أصوات ملغاة",
+        pv_scan_votants: "عدد المصوتين",
+        pv_scan_inscrits: "عدد المسجلين",
+        pv_scan_raw: "النص المستخرج",
+        cpt_counter_cancel: "ملغاة",
+        cpt_counter_negotiation: "متنازع عليها",
+        cpt_counter_cancel_btn: "تراجع آخر +",
         cpt_kbd_hint: "اختصار: انقر + أو − ثم استخدم مفاتيح + و − على لوحة المفاتيح",
         th_time: "الوقت",
         th_bureau: "المكتب",
         th_actif: "المراقب النشط",
         th_parti: "الحزب",
-        th_mourakib: "المراقب",
+        th_mourakib: "اللائحة",
+        cpt_list_regionale: "لائحة جهوية",
+        cpt_list_nationale: "لائحة وطنية",
+        cpt_col_parti: "الحزب",
+        cpt_col_total: "المجموع",
+        cpt_no_partis: "لا توجد أحزاب — أضفها في الإعدادات",
         th_action: "الإجراء",
         th_total: "مجموع المراقب",
         lbl_name: "الاسم",
-        lbl_color: "اللون",
+        lbl_logo: "الشعار",
         dash_title: "لوحة التحكم",
         dash_intro: "نظرة عامة على مكاتب الاقتراع والمشاركة والوحدات",
         dash_kpi_bureaux: "مجموع المكاتب",
@@ -326,7 +365,11 @@ const I18N = {
         cfg_partis: "Partis politiques",
         cfg_mourakibs: "Représentants (par parti)",
         cfg_add_bureau: "Ajouter un bureau",
+        cfg_locate: "Localiser maintenant",
+        cfg_locating: "Localisation en cours…",
+        cfg_located: "Position du bureau enregistrée",
         cfg_add_parti: "Ajouter un parti",
+        cfg_pick_logo: "Choisir l’image du parti",
         cfg_add_mourakib: "Ajouter un représentant",
         cfg_save: "Enregistrer la configuration",
         cfg_cancel: "Annuler les modifications",
@@ -403,16 +446,51 @@ const I18N = {
         cpt_journal_all_bureaux: "Tous les bureaux",
         cpt_close_hint: "Comptage terminé ? Passez le statut à <strong>Fermé</strong> puis exportez le PV.",
         cpt_locked: "Bureau fermé — consultation seule. Export du PV possible.",
+        phone_undo_last: "↩ Annuler — supprimer le dernier +",
+        phone_undo_none: "Aucun + à supprimer",
+        pv_scan_title: "📷 Comparer le PV (photo)",
+        pv_scan_hint: "Prenez une photo du PV — les chiffres sont lus et comparés à l'application",
+        pv_scan_pick: "📷 Photo / choisir image",
+        pv_scan_pick_pc: "📁 Choisir image du PV",
+        pv_scan_pick_phone: "📷 Photographier le PV",
+        pv_scan_photo_ok: "Photo OK — comparaison…",
+        pv_scan_photo_pc: "Image choisie — cliquez « Comparer »",
+        pv_scan_run: "Comparer",
+        pv_scan_loading: "Lecture de l'image…",
+        pv_scan_done: "Comparaison terminée",
+        pv_scan_error: "Impossible de lire l'image",
+        pv_scan_ok: "✓ PV conforme à l'application",
+        pv_scan_mismatch: "✗ Écarts détectés",
+        pv_scan_no_numbers: "⚠ Aucun chiffre extrait",
+        pv_scan_partial: "⚠ Comparaison partielle",
+        pv_scan_col_field: "Rubrique",
+        pv_scan_col_app: "Application",
+        pv_scan_col_photo: "PV photo",
+        pv_scan_col_match: "OK",
+        pv_scan_valid: "Total voix valides",
+        pv_scan_blancs: "Bulletins blancs",
+        pv_scan_nuls: "Bulletins nuls",
+        pv_scan_votants: "Votants",
+        pv_scan_inscrits: "Inscrits",
+        pv_scan_raw: "Texte OCR",
+        cpt_counter_cancel: "Annulées",
+        cpt_counter_negotiation: "Contestées",
+        cpt_counter_cancel_btn: "Annuler dernier +",
         cpt_kbd_hint: "Raccourci : cliquez + ou − puis utilisez les touches + et − du clavier",
         th_time: "Heure",
         th_bureau: "Bureau",
         th_actif: "Représentant actif",
         th_parti: "Parti",
-        th_mourakib: "Représentant",
+        th_mourakib: "Liste",
+        cpt_list_regionale: "Liste régionale",
+        cpt_list_nationale: "Liste nationale",
+        cpt_col_parti: "Parti",
+        cpt_col_total: "Total",
+        cpt_no_partis: "Aucun parti — ajoutez-les dans les réglages",
         th_action: "Action",
         th_total: "Total représentant",
         lbl_name: "Nom",
-        lbl_color: "Couleur",
+        lbl_logo: "Logo",
         dash_title: "Tableau de bord",
         dash_intro: "Vue d'ensemble des bureaux, participation et modules",
         dash_kpi_bureaux: "Total bureaux",
@@ -549,6 +627,7 @@ function statusLabel(statusKey) {
 function applyI18n() {
     const lang = getLang();
     document.querySelectorAll("[data-i18n]").forEach((el) => {
+        if (el.classList.contains("bureau-counter-btn")) return;
         const key = el.dataset.i18n;
         if (I18N[lang][key]) el.textContent = I18N[lang][key];
     });
@@ -560,6 +639,20 @@ function applyI18n() {
         const key = el.dataset.i18nPlaceholder;
         if (I18N[lang][key]) el.placeholder = I18N[lang][key];
     });
+    document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+        const key = el.dataset.i18nTitle;
+        if (I18N[lang][key]) el.title = I18N[lang][key];
+    });
+    const cancelBtnIcon = document.getElementById("btn-counter-cancel");
+    if (cancelBtnIcon) {
+        cancelBtnIcon.textContent = "↩";
+        const undoLabel = I18N[lang].cpt_counter_cancel_btn;
+        if (undoLabel) {
+            cancelBtnIcon.title = undoLabel;
+            cancelBtnIcon.setAttribute("aria-label", undoLabel);
+        }
+        cancelBtnIcon.removeAttribute("data-i18n");
+    }
     const titleEl = document.querySelector("title[data-i18n]");
     if (titleEl && I18N[lang][titleEl.dataset.i18n]) {
         document.title = I18N[lang][titleEl.dataset.i18n];

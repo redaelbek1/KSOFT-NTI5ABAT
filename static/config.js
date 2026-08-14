@@ -17,8 +17,14 @@ const els = {
     bureauCapacite: document.getElementById("bureau-capacite"),
     bureauStatus: document.getElementById("bureau-status"),
     btnAddBureau: document.getElementById("btn-add-bureau"),
+    btnLocateBureau: document.getElementById("btn-locate-bureau"),
+    bureauCoords: document.getElementById("bureau-coords"),
+    btnLocateBureauEdit: document.getElementById("btn-locate-bureau-edit"),
+    editBureauCoords: document.getElementById("edit-bureau-coords"),
     bureauList: document.getElementById("bureau-list"),
     partiName: document.getElementById("parti-name"),
+    btnPickPartiLogo: document.getElementById("btn-pick-parti-logo"),
+    partiLogoPreview: document.getElementById("parti-logo-preview"),
     btnAddParti: document.getElementById("btn-add-parti"),
     partiList: document.getElementById("parti-list"),
     mourakibParti: document.getElementById("mourakib-parti"),
@@ -36,7 +42,8 @@ const els = {
     modalRename: document.getElementById("modal-rename-parti"),
     renameId: document.getElementById("rename-parti-id"),
     renameName: document.getElementById("rename-parti-name"),
-    renameColor: document.getElementById("rename-parti-color"),
+    btnPickRenameLogo: document.getElementById("btn-pick-rename-logo"),
+    renameLogoPreview: document.getElementById("rename-logo-preview"),
     modalEditBureau: document.getElementById("modal-edit-bureau"),
     editBureauId: document.getElementById("edit-bureau-id"),
     editBureauName: document.getElementById("edit-bureau-name"),
@@ -50,6 +57,66 @@ const els = {
     editBureauCapacite: document.getElementById("edit-bureau-capacite"),
     editBureauStatus: document.getElementById("edit-bureau-status"),
 };
+
+// Logo retenu pour le prochain parti ajouté, et pour celui en cours d'édition.
+// Le logo est obligatoire : la couleur reste interne (graphiques) et n'est plus éditable.
+let newBureauCoords = null;   // relevé pour le مكتب en cours de création
+let editBureauCoords = null;  // relevé pour le مكتب en cours de modification
+let newParti = { logo: null, color: null };
+let renameLogo = null;
+let renameColor = null;
+
+/** Un même parti ne peut être ajouté qu'une fois (variantes d'écriture incluses). */
+function partiExists(name, exceptId) {
+    const key = window.KasoftLogos?.nameKey || ((n) => String(n || "").trim());
+    const needle = key(name);
+    return draftState.partis.some((p) => p.id !== exceptId && key(p.name) === needle);
+}
+
+/** Coordonnées d'un مكتب dans la liste, avec lien vers la carte. */
+function bureauCoordsHtml(b) {
+    const url = KasoftStore.bureauMapUrl(b);
+    if (!url) return "";
+    return ` | <a class="coords-link" href="${url}" target="_blank" rel="noopener">📍 <span class="num" lang="en-US" dir="ltr">${b.lat}, ${b.lng}</span></a>`;
+}
+
+/** Affiche les coordonnées relevées à côté du bouton « تحديد الموقع الآن ». */
+function renderCoords(target, coords) {
+    if (!target) return;
+    if (!coords) {
+        target.textContent = "";
+        target.classList.add("hidden");
+        return;
+    }
+    const accuracy = coords.accuracy ? ` ±${coords.accuracy}م` : "";
+    target.innerHTML =
+        `<span class="num" lang="en-US" dir="ltr">${coords.lat}, ${coords.lng}</span>${accuracy}`;
+    target.classList.remove("hidden");
+}
+
+/** Relève la position et la range dans `store`, en désactivant le bouton. */
+async function locateInto(button, target, store) {
+    const label = button.querySelector("[data-i18n]");
+    const original = label?.textContent;
+    button.disabled = true;
+    if (label) label.textContent = tr("cfg_locating");
+    try {
+        const coords = await KasoftStore.locateDevice();
+        store(coords);
+        renderCoords(target, coords);
+        if (window.Ui) Ui.toast(tr("cfg_located"), "success");
+    } catch (err) {
+        if (window.Ui) Ui.toast(err.message, "error");
+        else alert(err.message);
+    } finally {
+        button.disabled = false;
+        if (label && original) label.textContent = original;
+    }
+}
+
+function renderLogoPreview(target, parti) {
+    if (target) target.innerHTML = KasoftLogos.badge(parti, { className: "parti-logo-sm" });
+}
 
 function markDirty() {
     const dirty = !KasoftStore.statesEqual(savedState, draftState);
@@ -115,7 +182,7 @@ function renderBureaux() {
         <li class="config-item">
             <span>
                 <strong>${b.name}</strong> — ${b.ville} — ${b.region}
-                <br><span class="hint">${stLabel} | كود: <span class="num" lang="en-US" dir="ltr">${b.code || "—"}</span> | <span class="num" lang="en-US">${b.inscrits}</span> مسجل | سعة <span class="num" lang="en-US">${b.capacite}</span></span>
+                <br><span class="hint">${stLabel} | كود: <span class="num" lang="en-US" dir="ltr">${b.code || "—"}</span> | <span class="num" lang="en-US">${b.inscrits}</span> مسجل | سعة <span class="num" lang="en-US">${b.capacite}</span>${bureauCoordsHtml(b)}</span>
             </span>
             <span class="config-item-actions">
                 <button type="button" class="btn-icon-edit" data-edit-bureau="${b.id}" title="تعديل">✎</button>
@@ -132,7 +199,7 @@ function renderPartis() {
         .map(
             (p) => `
         <li class="config-item">
-            <span class="parti-dot" style="background:${p.color}"></span>
+            ${KasoftLogos.badge(p)}
             <span>${p.name}</span>
             <button type="button" class="btn-icon-edit" data-rename-parti="${p.id}" title="إعادة تسمية">✎</button>
             <button type="button" class="btn-icon-del" data-del-parti="${p.id}" title="حذف">✕</button>
@@ -160,7 +227,7 @@ function renderMourakibs() {
                 .join("");
             return `
             <div class="mourakib-group">
-                <h4><span class="parti-dot" style="background:${p.color}"></span> ${p.name}</h4>
+                <h4>${KasoftLogos.badge(p, { className: "parti-logo-sm" })} ${p.name}</h4>
                 <ul class="config-list">${items || '<li class="hint">لا يوجد مراقبون</li>'}</ul>
             </div>`;
         })
@@ -187,6 +254,8 @@ function openEditBureauModal(id) {
     els.editBureauInscrits.value = b.inscrits;
     els.editBureauCapacite.value = b.capacite;
     els.editBureauStatus.value = b.status;
+    editBureauCoords = b.lat != null && b.lng != null ? { lat: b.lat, lng: b.lng } : null;
+    renderCoords(els.editBureauCoords, editBureauCoords);
     els.modalEditBureau.classList.remove("hidden");
 }
 
@@ -212,6 +281,8 @@ els.btnAddBureau.addEventListener("click", () => {
             inscrits: els.bureauInscrits.value,
             capacite: els.bureauCapacite.value || els.bureauInscrits.value,
             status: els.bureauStatus.value,
+            lat: newBureauCoords?.lat ?? null,
+            lng: newBureauCoords?.lng ?? null,
         })
     );
     els.bureauName.value = "";
@@ -222,20 +293,65 @@ els.btnAddBureau.addEventListener("click", () => {
     if (els.bureauAdresse) els.bureauAdresse.value = "";
     els.bureauInscrits.value = "";
     els.bureauCapacite.value = "";
+    newBureauCoords = null;
+    renderCoords(els.bureauCoords, null);
     render();
     markDirty();
 });
 
+els.btnLocateBureau?.addEventListener("click", () =>
+    locateInto(els.btnLocateBureau, els.bureauCoords, (c) => {
+        newBureauCoords = c;
+    })
+);
+
+els.btnLocateBureauEdit?.addEventListener("click", () =>
+    locateInto(els.btnLocateBureauEdit, els.editBureauCoords, (c) => {
+        editBureauCoords = c;
+    })
+);
+
 els.btnAddParti.addEventListener("click", () => {
     const name = els.partiName.value.trim();
     if (!name) return alert("أدخل اسم الحزب");
+    if (!newParti.logo) return alert("اختر صورة الحزب");
+    if (partiExists(name)) return alert("هذا الحزب مضاف مسبقاً");
     const id = KasoftStore.uid();
-    const color = KasoftStore.PARTY_COLORS[draftState.partis.length % KasoftStore.PARTY_COLORS.length];
-    draftState.partis.push({ id, name, color });
+    const color =
+        newParti.color
+        || KasoftStore.PARTY_COLORS[draftState.partis.length % KasoftStore.PARTY_COLORS.length];
+    draftState.partis.push({ id, name, color, logo: newParti.logo });
     draftState.mourakibs[id] = [];
     els.partiName.value = "";
+    newParti = { logo: null, color: null };
+    renderLogoPreview(els.partiLogoPreview, null);
     render();
     markDirty();
+});
+
+els.btnPickPartiLogo?.addEventListener("click", async () => {
+    const choice = await KasoftLogos.pick({ logo: newParti.logo });
+    if (!choice) return;
+    newParti = { logo: choice.logo, color: choice.color || newParti.color };
+    // Un choix depuis le catalogue remplit aussi le nom s'il est vide.
+    if (choice.name && !els.partiName.value.trim()) els.partiName.value = choice.name;
+    renderLogoPreview(els.partiLogoPreview, {
+        name: els.partiName.value,
+        logo: newParti.logo,
+        color: newParti.color,
+    });
+});
+
+els.btnPickRenameLogo?.addEventListener("click", async () => {
+    const choice = await KasoftLogos.pick({ logo: renameLogo });
+    if (!choice) return;
+    renameLogo = choice.logo;
+    if (choice.color) renameColor = choice.color;
+    renderLogoPreview(els.renameLogoPreview, {
+        name: els.renameName.value,
+        logo: renameLogo,
+        color: renameColor,
+    });
 });
 
 els.btnAddMourakib.addEventListener("click", () => {
@@ -271,7 +387,9 @@ els.partiList.addEventListener("click", (e) => {
         const p = draftState.partis.find((x) => x.id === renameId);
         els.renameId.value = renameId;
         els.renameName.value = p?.name || "";
-        if (els.renameColor) els.renameColor.value = p?.color || "#1565c0";
+        renameColor = p?.color || null;
+        renameLogo = p?.logo || null;
+        renderLogoPreview(els.renameLogoPreview, p);
         els.modalRename.classList.remove("hidden");
     }
     if (delId) {
@@ -300,10 +418,13 @@ document.getElementById("btn-save-rename").addEventListener("click", () => {
     const id = els.renameId.value;
     const name = els.renameName.value.trim();
     if (!name) return alert("أدخل الاسم");
+    if (!renameLogo) return alert("اختر صورة الحزب");
+    if (partiExists(name, id)) return alert("هذا الحزب مضاف مسبقاً");
     const p = draftState.partis.find((x) => x.id === id);
     if (p) {
         p.name = name;
-        if (els.renameColor) p.color = els.renameColor.value;
+        if (renameColor) p.color = renameColor;
+        p.logo = renameLogo;
     }
     els.modalRename.classList.add("hidden");
     render();
@@ -338,6 +459,8 @@ document.getElementById("btn-save-bureau-edit").addEventListener("click", () => 
             inscrits: els.editBureauInscrits.value,
             capacite: els.editBureauCapacite.value,
             status: els.editBureauStatus.value,
+            lat: editBureauCoords?.lat ?? null,
+            lng: editBureauCoords?.lng ?? null,
         })
     );
     els.modalEditBureau.classList.add("hidden");

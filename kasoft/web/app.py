@@ -43,6 +43,7 @@ from kasoft.export_ma.geo_service import (
 )
 from kasoft.export_ma.cleanup import cleanup_output
 from kasoft.paths import STATIC_DIR, TEMPLATES_DIR
+from kasoft.web.device import is_phone_request
 
 app = Flask(
     __name__,
@@ -80,23 +81,34 @@ def disable_static_cache(response):
 
 
 def migrate_state_payload(data):
+    from kasoft.core.lists import migrate_votes
+
     return {
         "bureaux": data.get("bureaux", []),
         "partis": data.get("partis", []),
         "mourakibs": data.get("mourakibs", {}),
-        "votes": data.get("votes", {}),
+        "votes": migrate_votes(data.get("votes", {})),
         "pv": data.get("pv", {}),
         "journal": data.get("journal", []),
+        "bureauCounters": data.get("bureauCounters", {}),
         "currentBureau": data.get("currentBureau", ""),
         "mourakibActif": data.get("mourakibActif", ""),
     }
+
+
+def _login_next_url():
+    """Chemin + query string pour retour après login."""
+    qs = request.query_string.decode()
+    if qs:
+        return f"{request.path}?{qs}"
+    return request.path
 
 
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not is_authenticated():
-            return redirect(url_for("login", next=request.path))
+            return redirect(url_for("login", next=_login_next_url()))
         return view(*args, **kwargs)
 
     return wrapped
@@ -116,7 +128,7 @@ def admin_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not is_authenticated():
-            return redirect(url_for("login", next=request.path))
+            return redirect(url_for("login", next=_login_next_url()))
         if not is_admin():
             return redirect(url_for("dashboard"))
         return view(*args, **kwargs)
@@ -143,7 +155,8 @@ def inject_template_globals():
         "kasoft_is_admin": is_admin(),
         "kasoft_role": get_role() if is_authenticated() else None,
         "kasoft_bureau_id": get_bureau_id() if is_authenticated() else None,
-        "asset_version": os.environ.get("ASSET_VERSION", "42"),
+        "kasoft_embed": request.args.get("embed") == "1",
+        "asset_version": os.environ.get("ASSET_VERSION", "50"),
     }
 
 export_state = {
@@ -189,6 +202,22 @@ def _parse_selection(data):
     return (election_key, region, province, commune, circ), None, None
 
 
+@app.before_request
+def auto_phone_comptage():
+    """Sur téléphone : مراقب → version phone automatiquement."""
+    if not is_authenticated():
+        return None
+    path = request.path
+    if path.startswith(("/static", "/api", "/login", "/logout", "/phone", "/mobile", "/demo", "/ws")):
+        return None
+    if not is_phone_request():
+        return None
+    bureau_id = get_bureau_id()
+    if get_role() != "admin" and bureau_id and path in ("/", "/dashboard", "/comptage"):
+        return redirect(url_for("comptage_phone", bureau=bureau_id))
+    return None
+
+
 @app.route("/")
 @login_required
 def index():
@@ -203,13 +232,39 @@ def export_results():
 @app.route("/comptage")
 @login_required
 def comptage():
-    return render_template("comptage.html", active="comptage")
+    if is_phone_request():
+        return redirect(url_for("comptage_phone", **request.args))
+    return render_template("pc/comptage.html", active="comptage")
+
+
+@app.route("/phone")
+@login_required
+def comptage_phone():
+    return render_template("phone/comptage.html")
 
 
 @app.route("/mobile")
 @login_required
 def comptage_mobile():
-    return render_template("comptage_mobile.html")
+    return redirect(url_for("comptage_phone", **request.args))
+
+
+@app.route("/demo")
+@login_required
+def demo_presentation():
+    """Présentation PC + Phone dans une seule page (deux iframes)."""
+    bureau = (request.args.get("bureau") or "").strip()
+    pc_qs = {"view": "pc", "embed": "1"}
+    phone_qs = {"view": "phone", "embed": "1"}
+    if bureau:
+        pc_qs["bureau"] = bureau
+        phone_qs["bureau"] = bureau
+    return render_template(
+        "demo.html",
+        bureau=bureau,
+        pc_url=url_for("comptage", **pc_qs),
+        phone_url=url_for("comptage_phone", **phone_qs),
+    )
 
 
 @app.route("/configuration")
@@ -250,7 +305,9 @@ def login():
                     return redirect(url_for("dashboard"))
                 return redirect(nxt)
             if scoped_bureau:
-                return redirect(f"/mobile?bureau={scoped_bureau}")
+                if is_phone_request():
+                    return redirect(url_for("comptage_phone", bureau=scoped_bureau))
+                return redirect(url_for("comptage", bureau=scoped_bureau))
             return redirect(url_for("dashboard"))
         record_failed_login(client_ip)
         return render_template(
@@ -259,7 +316,22 @@ def login():
             bureaux=bureaux,
             selected_bureau_id=bureau_id,
         )
-    return render_template("login.html", error=None, bureaux=_login_bureaux())
+    bureaux = _login_bureaux()
+    selected_bureau_id = None
+    nxt = request.args.get("next") or ""
+    if "bureau=" in nxt:
+        from urllib.parse import parse_qs, urlparse
+
+        q = urlparse(nxt).query
+        bid = (parse_qs(q).get("bureau") or [None])[0]
+        if bid and any(b["id"] == bid for b in bureaux):
+            selected_bureau_id = bid
+    return render_template(
+        "login.html",
+        error=None,
+        bureaux=bureaux,
+        selected_bureau_id=selected_bureau_id,
+    )
 
 
 @app.route("/logout")

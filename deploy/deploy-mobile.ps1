@@ -1,51 +1,31 @@
-# Déploie la version mobile /mobile sur Oracle (conteneur kasoft)
-# Usage:
-#   .\deploy\deploy-mobile.ps1 -KeyPath "C:\T SHIRT\ssh-key-2026-07-08.key"
+# Déploie la version phone (dossier templates/phone + static/phone)
 param(
-    [string]$KeyPath = $env:KASOFT_SSH_KEY,
-    [string]$Host = "ubuntu@51.170.128.73",
-    [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+    [string]$Host = "51.170.128.73",
+    [string]$User = "ubuntu",
+    [string]$KeyPath = "$HOME\kasoft-vm.key"
 )
 
-if (-not $KeyPath -or -not (Test-Path $KeyPath)) {
-    Write-Error "Clé SSH introuvable. Passe -KeyPath ou définis KASOFT_SSH_KEY."
-    exit 1
-}
-
+$root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $files = @(
-    @{ local = "templates\comptage_mobile.html"; remote = "comptage_mobile.html"; dest = "/app/templates/comptage_mobile.html" },
-    @{ local = "templates\comptage.html"; remote = "comptage.html"; dest = "/app/templates/comptage.html" },
-    @{ local = "static\comptage-mobile.js"; remote = "comptage-mobile.js"; dest = "/app/static/comptage-mobile.js" },
-    @{ local = "static\comptage-mobile.css"; remote = "comptage-mobile.css"; dest = "/app/static/comptage-mobile.css" },
-    @{ local = "static\manifest.json"; remote = "manifest.json"; dest = "/app/static/manifest.json" },
-    @{ local = "kasoft\web\app.py"; remote = "app.py"; dest = "/app/kasoft/web/app.py" }
+    @{ local = "templates\phone\comptage.html"; dest = "/app/templates/phone/comptage.html" },
+    @{ local = "static\phone\app.css"; dest = "/app/static/phone/app.css" },
+    @{ local = "static\phone\app.js"; dest = "/app/static/phone/app.js" },
+    @{ local = "kasoft\web\app.py"; dest = "/app/kasoft/web/app.py" },
+    @{ local = "kasoft\web\device.py"; dest = "/app/kasoft/web/device.py" },
+    @{ local = "static\manifest.json"; dest = "/app/static/manifest.json" }
 )
 
+Write-Host "Deploy phone -> $User@${Host}" -ForegroundColor Cyan
 foreach ($f in $files) {
-    $src = Join-Path $ProjectRoot $f.local
-    if (-not (Test-Path $src)) {
-        Write-Error "Fichier manquant: $src"
-        exit 1
-    }
+    $src = Join-Path $root $f.local
+    if (-not (Test-Path $src)) { throw "Missing: $src" }
+    scp -i $KeyPath $src "${User}@${Host}:$($f.dest)"
 }
 
-Write-Host "==> Upload vers $Host" -ForegroundColor Cyan
-foreach ($f in $files) {
-    scp -i $KeyPath (Join-Path $ProjectRoot $f.local) "${Host}:~/$($f.remote)"
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-}
-
-$copies = ($files | ForEach-Object { "sudo docker cp ~/$($_.remote) kasoft:$($_.dest)" }) -join "; "
-$remote = @"
-$copies
-sudo docker restart kasoft
-sleep 5
-curl -sS -o /dev/null -w 'HTTP /mobile: %{http_code}\n' http://127.0.0.1:10000/mobile
+ssh -i $KeyPath "${User}@${Host}" @"
+docker restart kasoft
+sleep 3
+curl -sS -o /dev/null -w 'HTTP /phone: %{http_code}\n' http://127.0.0.1:10000/phone
 "@
 
-Write-Host "==> Mise à jour conteneur" -ForegroundColor Cyan
-ssh -i $KeyPath $Host $remote
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-Write-Host ""
-Write-Host "OK — http://51.170.128.73/mobile" -ForegroundColor Green
+Write-Host "OK — http://${Host}/phone" -ForegroundColor Green

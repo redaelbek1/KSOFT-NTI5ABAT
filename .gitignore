@@ -8,3 +8,4 @@ data/kasoft.db
 data/geo_disk/
 data/voix_disk/
 data/archive/
+data/kasoft_state.backup.json

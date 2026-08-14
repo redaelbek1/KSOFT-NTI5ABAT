@@ -1,0 +1,99 @@
+/* Tableau de comptage حزب × لائحة (voir static/shared/parties-table.js) */
+
+.ptable-wrap {
+    background: #fff;
+    border: 1px solid #d4e2f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(24, 94, 165, .08);
+    overflow-x: auto;
+}
+
+.ptable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .95rem;
+}
+
+.ptable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #185ea5;
+    color: #fff;
+    font-weight: 700;
+    font-size: .85rem;
+    padding: .6rem .4rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ptable thead .ptable-parti-th { text-align: start; padding-inline-start: .7rem; }
+
+.ptable tbody tr + tr { border-top: 1px solid #e6eef7; }
+.ptable tbody tr:nth-child(even) { background: #f7fafd; }
+
+/* Colonne du حزب : image + nom */
+.ptable-parti {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem .7rem;
+    font-weight: 600;
+    text-align: start;
+    min-width: 9rem;
+}
+
+.ptable-logo { width: 34px; height: 34px; border-radius: 8px; }
+.ptable-parti-name { line-height: 1.25; }
+
+.ptable-row-leader { background: #fff8e1 !important; }
+.ptable-row-leader .ptable-parti-name { color: #ef6c00; }
+
+/* Cases de comptage */
+.ptable-cell { padding: .35rem .3rem; text-align: center; }
+
+.ptable-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.ptable-count {
+    min-width: 2.2rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a365d;
+}
+
+.ptable-plus {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #185ea5;
+    background: #e8f2fa;
+    border: 1px solid #b9d6ee;
+    border-radius: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ptable-plus:active { background: #185ea5; color: #fff; transform: scale(.94); }
+.ptable-plus:disabled { opacity: .4; cursor: not-allowed; }
+
+.ptable-cell-active { box-shadow: inset 0 0 0 2px #185ea5; border-radius: 8px; }
+
+/* Téléphone : colonnes plus serrées, le nom du حزب peut passer sur 2 lignes */
+@media (max-width: 600px) {
+    .ptable { font-size: .85rem; }
+    .ptable thead th { font-size: .75rem; padding: .5rem .25rem; }
+    .ptable-parti { gap: .4rem; padding: .45rem .4rem; min-width: 7.5rem; }
+    .ptable-logo { width: 28px; height: 28px; border-radius: 7px; }
+    .ptable-parti-name { font-size: .8rem; }
+    .ptable-counter { flex-direction: column; gap: .2rem; }
+    .ptable-count { font-size: 1rem; min-width: 0; }
+    .ptable-plus { width: 40px; height: 36px; font-size: 1.2rem; }
+}

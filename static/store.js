@@ -1,9 +1,28 @@
-const STORAGE_KEY = "kasoft_electoral_v2";
+// v3 : comptage par لائحة — repart de l'état serveur, les caches v2 (comptage
+// par مراقب) ne sont plus relus pour éviter tout total hérité incohérent.
+const STORAGE_KEY = "kasoft_electoral_v3";
 const PARTY_COLORS = [
     "#f9a825", "#43a047", "#e53935", "#8e24aa",
     "#1565c0", "#00838f", "#c62828", "#4527a0",
     "#2e7d32", "#ef6c00",
 ];
+
+/**
+ * Le comptage se fait par حزب × لائحة. Les deux listes sont stockées à la place
+ * des anciens identifiants de مراقب dans votes[bureau][parti], donc tous les
+ * totaux (مجموع، مشاركة، ترتيب) continuent de fonctionner sans changement.
+ */
+const VOTE_LISTS = [
+    { id: "liste-regionale", i18n: "cpt_list_regionale", label: "لائحة جهوية" },
+    { id: "liste-nationale", i18n: "cpt_list_nationale", label: "لائحة وطنية" },
+];
+const VOTE_LIST_IDS = VOTE_LISTS.map((l) => l.id);
+
+function voteListLabel(listId) {
+    const list = VOTE_LISTS.find((l) => l.id === listId);
+    if (!list) return "";
+    return window.KasoftI18n?.t(list.i18n) || list.label;
+}
 
 const BUREAU_STATUSES = {
     ouvert: { label: "مفتوح", class: "status-open" },
@@ -43,7 +62,46 @@ function normalizeBureau(b) {
         centre: b.centre || "",
         adresse: b.adresse || "",
         pin: b.pin || "",
+        // Coordonnées GPS relevées par le مسؤول via « تحديد الموقع الآن ».
+        lat: Number.isFinite(parseFloat(b.lat)) ? parseFloat(b.lat) : null,
+        lng: Number.isFinite(parseFloat(b.lng)) ? parseFloat(b.lng) : null,
     };
+}
+
+/** Lien Google Maps d'un مكتب localisé. */
+function bureauMapUrl(b) {
+    if (b?.lat == null || b?.lng == null) return "";
+    return `https://www.google.com/maps?q=${b.lat},${b.lng}`;
+}
+
+/**
+ * Relève la position de l'appareil (le مسؤول se trouve au مكتب).
+ * Nécessite HTTPS ou localhost — le navigateur demande l'autorisation.
+ */
+function locateDevice(options = {}) {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("المتصفح لا يدعم تحديد الموقع"));
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) =>
+                resolve({
+                    lat: Number(pos.coords.latitude.toFixed(6)),
+                    lng: Number(pos.coords.longitude.toFixed(6)),
+                    accuracy: Math.round(pos.coords.accuracy || 0),
+                }),
+            (err) => {
+                const messages = {
+                    1: "تم رفض إذن الموقع — فعّله في المتصفح",
+                    2: "تعذر تحديد الموقع — تحقق من GPS",
+                    3: "انتهت مهلة تحديد الموقع — حاول مجدداً",
+                };
+                reject(new Error(messages[err.code] || "تعذر تحديد الموقع"));
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0, ...options }
+        );
+    });
 }
 
 function emptyConfig() {
@@ -53,9 +111,32 @@ function emptyConfig() {
         mourakibs: {},
         votes: {},
         journal: [],
+        bureauCounters: {},
         currentBureau: "",
         mourakibActif: "",
     };
+}
+
+/**
+ * Ancien comptage (une case par مراقب) → nouveau comptage par لائحة : les
+ * anciennes voix sont reversées dans la لائحة جهوية pour que les totaux
+ * déjà saisis restent exacts.
+ */
+function migrateVotes(votes) {
+    Object.values(votes || {}).forEach((bureau) => {
+        Object.entries(bureau || {}).forEach(([partiId, bucket]) => {
+            const legacy = Object.keys(bucket || {}).filter((k) => !VOTE_LIST_IDS.includes(k));
+            if (!legacy.length) return;
+            const already = VOTE_LIST_IDS.some((id) => parseInt(bucket[id], 10) > 0);
+            const carried = legacy.reduce((sum, k) => sum + (parseInt(bucket[k], 10) || 0), 0);
+            legacy.forEach((k) => delete bucket[k]);
+            // Déjà converti : les anciennes clés sont un reste d'une autre
+            // session, les recompter doublerait le total.
+            if (!already && carried) bucket[VOTE_LISTS[0].id] = carried;
+            bureau[partiId] = bucket;
+        });
+    });
+    return votes;
 }
 
 function migrateState(data) {
@@ -63,8 +144,9 @@ function migrateState(data) {
         ...emptyConfig(),
         ...data,
         mourakibs: data.mourakibs || {},
-        votes: data.votes || {},
+        votes: migrateVotes(data.votes || {}),
         journal: data.journal || [],
+        bureauCounters: data.bureauCounters || {},
     };
     merged.bureaux = (data.bureaux || []).map(normalizeBureau);
     merged.partis = data.partis || [];
@@ -89,6 +171,7 @@ function cleanStatePayload(state) {
         votes: state.votes || {},
         pv: state.pv || {},
         journal: state.journal || [],
+        bureauCounters: state.bureauCounters || {},
         currentBureau: state.currentBureau || "",
         mourakibActif: state.mourakibActif || "",
     };
@@ -107,6 +190,8 @@ function mergeBureau(local, remote) {
     ["name", "ville", "region", "code", "centre", "adresse"].forEach((key) => {
         merged[key] = (local[key] || remote[key] || "").trim() || merged[key] || "";
     });
+    merged.lat = local.lat ?? remote.lat ?? null;
+    merged.lng = local.lng ?? remote.lng ?? null;
     merged.inscrits = maxInt(local.inscrits, remote.inscrits);
     merged.capacite = maxInt(local.capacite, remote.capacite, merged.inscrits);
     if (local.status === "ferme" || remote.status === "ferme") merged.status = "ferme";
@@ -195,6 +280,23 @@ function mergePv(localPv, remotePv) {
     return merged;
 }
 
+function mergeBureauCounters(local, remote) {
+    const merged = {};
+    const ids = new Set([
+        ...Object.keys(local || {}),
+        ...Object.keys(remote || {}),
+    ]);
+    ids.forEach((id) => {
+        const l = local?.[id] || {};
+        const r = remote?.[id] || {};
+        merged[id] = {
+            cancel: maxInt(l.cancel, r.cancel),
+            negotiation: maxInt(l.negotiation, r.negotiation),
+        };
+    });
+    return merged;
+}
+
 function mergePartis(localPartis, remotePartis) {
     const byId = new Map();
     (remotePartis || []).forEach((parti) => {
@@ -215,6 +317,38 @@ function mergePartis(localPartis, remotePartis) {
         }
     });
     return Array.from(byId.values());
+}
+
+/**
+ * Supprime les partis ajoutés deux fois sous le même nom (variantes d'écriture
+ * incluses). On garde celui qui a une image ; un doublon porteur de voix est
+ * conservé pour ne rien perdre.
+ */
+function dedupePartis(partis, votes) {
+    const key = window.KasoftLogos?.nameKey;
+    if (!key) return partis;
+    const voteCount = (id) =>
+        Object.values(votes || {}).reduce(
+            (sum, bureau) =>
+                sum
+                + Object.values(bureau?.[id] || {}).reduce((a, n) => a + (Number(n) || 0), 0),
+            0
+        );
+    const groups = new Map();
+    partis.forEach((p) => {
+        const k = key(p.name);
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(p);
+    });
+    const dropped = new Set();
+    groups.forEach((group) => {
+        if (group.length < 2) return;
+        const keep = group.find((p) => p.logo) || group[0];
+        group.forEach((p) => {
+            if (p !== keep && !voteCount(p.id)) dropped.add(p.id);
+        });
+    });
+    return dropped.size ? partis.filter((p) => !dropped.has(p.id)) : partis;
 }
 
 function mergeMourakibs(localM, remoteM) {
@@ -251,13 +385,15 @@ function mergeStates(local, remote) {
         .map((id) => mergeBureau(localB.get(id) || { id }, remoteB.get(id) || { id }))
         .filter((b) => b.id);
 
+    const votes = mergeVotes(local.votes, remote.votes, local.journal, remote.journal);
     return migrateState({
         bureaux,
-        partis: mergePartis(local.partis, remote.partis),
+        partis: dedupePartis(mergePartis(local.partis, remote.partis), votes),
         mourakibs: mergeMourakibs(local.mourakibs, remote.mourakibs),
-        votes: mergeVotes(local.votes, remote.votes, local.journal, remote.journal),
+        votes,
         pv: mergePv(local.pv, remote.pv),
         journal: mergeJournal(local.journal, remote.journal),
+        bureauCounters: mergeBureauCounters(local.bureauCounters, remote.bureauCounters),
         currentBureau: local.currentBureau || remote.currentBureau || "",
         mourakibActif: local.mourakibActif || remote.mourakibActif || "",
     });
@@ -382,12 +518,25 @@ function saveState(state, options = {}) {
     if (!options.skipSync) syncToServer(state);
 }
 
+/** Complète les images de partis manquantes depuis le catalogue (affichage). */
+async function applyPartyLogos(state) {
+    if (window.KasoftLogos?.autofill) {
+        try {
+            await KasoftLogos.autofill(state.partis);
+        } catch {
+            /* catalogue indisponible — badge lettre en repli */
+        }
+    }
+    return state;
+}
+
 async function loadStateAsync(options = {}) {
     const local = loadState();
     try {
         const remote = await fetchRemoteState();
-        if (!remote) return local;
+        if (!remote) return applyPartyLogos(local);
         const merged = mergeStates(local, remote);
+        await applyPartyLogos(merged);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
         if (
             !options.skipPush
@@ -399,7 +548,7 @@ async function loadStateAsync(options = {}) {
     } catch {
         /* hors-ligne */
     }
-    return local;
+    return applyPartyLogos(local);
 }
 
 function syncToServer(state) {
@@ -452,6 +601,11 @@ function ensureVotes(state, bureauId) {
 
 function getMourakibCount(state, bureauId, partiId, mourakibId) {
     return state.votes[bureauId]?.[partiId]?.[mourakibId] || 0;
+}
+
+/** Voix d'un حزب pour une لائحة donnée dans un مكتب. */
+function getListCount(state, bureauId, partiId, listId) {
+    return state.votes[bureauId]?.[partiId]?.[listId] || 0;
 }
 
 function getPartiTotal(state, bureauId, partiId) {
@@ -520,6 +674,37 @@ function validateStatePayload(data) {
         if (!b || !String(b.name || "").trim()) return "اسم المكتب مطلوب";
     }
     return null;
+}
+
+function ensureBureauCounters(state, bureauId) {
+    state.bureauCounters = state.bureauCounters || {};
+    if (!state.bureauCounters[bureauId]) {
+        state.bureauCounters[bureauId] = { cancel: 0, negotiation: 0 };
+    }
+    return state.bureauCounters[bureauId];
+}
+
+function getBureauCounter(state, bureauId, key) {
+    return ensureBureauCounters(state, bureauId)[key] || 0;
+}
+
+function incrementBureauCounter(state, bureauId, key, actif) {
+    const bucket = ensureBureauCounters(state, bureauId);
+    bucket[key] = (bucket[key] || 0) + 1;
+    const labels = {
+        cancel: "ملغاة",
+        negotiation: "متنازع عليها",
+    };
+    addJournalEntry(state, {
+        time: new Date().toISOString(),
+        bureauId,
+        actif: actif || "",
+        parti: "—",
+        mourakib: "—",
+        action: labels[key] || key,
+        total: bucket[key],
+    });
+    return bucket[key];
 }
 
 function ensurePvNumber(state, bureauId) {
@@ -724,13 +909,10 @@ function buildBureauPVLines(state, bureauId) {
     state.partis.forEach((p) => {
         const total = getPartiTotal(state, bureauId, p.id);
         lines.push(`${p.name}: ${total} صوت`);
-        const details = (state.mourakibs[p.id] || [])
-            .map((m) => {
-                const c = getMourakibCount(state, bureauId, p.id, m.id);
-                return c > 0 ? `${m.name}: ${c}` : null;
-            })
-            .filter(Boolean);
-        if (details.length) lines.push(`  تفصيل المراقبين: ${details.join("، ")}`);
+        const details = VOTE_LISTS.map(
+            (l) => `${l.label}: ${getListCount(state, bureauId, p.id, l.id)}`
+        );
+        lines.push(`  ${details.join("، ")}`);
         lines.push("");
     });
 
@@ -1095,13 +1277,22 @@ window.KasoftStore = {
     formatDate,
     ensureVotes,
     getMourakibCount,
+    getListCount,
+    VOTE_LISTS,
+    VOTE_LIST_IDS,
+    voteListLabel,
     getPartiTotal,
     getBureauTotal,
     getParticipation,
+    ensureBureauCounters,
+    getBureauCounter,
+    incrementBureauCounter,
     getDashboardStats,
     getRegionStats,
     getPartiRanking,
     duplicateBureau,
+    bureauMapUrl,
+    locateDevice,
     clearAllData,
     validateStatePayload,
     ensurePvNumber,

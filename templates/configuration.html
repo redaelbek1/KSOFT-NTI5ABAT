@@ -22,6 +22,11 @@
                 <input type="number" id="bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
                 <input type="number" id="bureau-capacite" data-i18n-placeholder="ph_capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
                 <select id="bureau-status" class="config-input"></select>
+                <button type="button" id="btn-locate-bureau" class="btn-locate">
+                    <span aria-hidden="true">📍</span>
+                    <span data-i18n="cfg_locate">تحديد الموقع الآن</span>
+                </button>
+                <span id="bureau-coords" class="coords-badge hidden"></span>
                 <button type="button" id="btn-add-bureau" class="btn-primary" data-i18n="cfg_add_bureau">إضافة مكتب</button>
             </div>
             <ul id="bureau-list" class="config-list"></ul>
@@ -33,6 +38,10 @@
         <div class="config-body">
             <div class="config-add-row">
                 <input type="text" id="parti-name" data-i18n-placeholder="ph_parti" placeholder="اسم الحزب" class="config-input">
+                <button type="button" id="btn-pick-parti-logo" class="btn-logo-pick">
+                    <span id="parti-logo-preview"></span>
+                    <span data-i18n="cfg_pick_logo">اختر الشعار</span>
+                </button>
                 <button type="button" id="btn-add-parti" class="btn-primary" data-i18n="cfg_add_parti">إضافة حزب</button>
             </div>
             <ul id="parti-list" class="config-list"></ul>
@@ -74,9 +83,12 @@
             <label data-i18n="lbl_name">الاسم</label>
             <input type="text" id="rename-parti-name" class="config-input" data-i18n-placeholder="ph_parti" placeholder="اسم الحزب">
         </div>
-        <div class="modal-field modal-field-color">
-            <label data-i18n="lbl_color">اللون</label>
-            <input type="color" id="rename-parti-color" class="config-input-color" value="#1565c0">
+        <div class="modal-field">
+            <label data-i18n="lbl_logo">الشعار</label>
+            <button type="button" id="btn-pick-rename-logo" class="btn-logo-pick">
+                <span id="rename-logo-preview"></span>
+                <span data-i18n="cfg_pick_logo">اختر الشعار</span>
+            </button>
         </div>
         <div class="modal-actions">
             <button type="button" id="btn-save-rename" class="btn-primary" data-i18n="btn_save">حفظ</button>
@@ -99,6 +111,11 @@
             <input type="number" id="edit-bureau-inscrits" data-i18n-placeholder="ph_inscrits" placeholder="مسجلون" class="config-input num" lang="en-US" min="0">
             <input type="number" id="edit-bureau-capacite" data-i18n-placeholder="ph_capacite" placeholder="السعة" class="config-input num" lang="en-US" min="0">
             <select id="edit-bureau-status" class="config-input"></select>
+            <button type="button" id="btn-locate-bureau-edit" class="btn-locate">
+                <span aria-hidden="true">📍</span>
+                <span data-i18n="cfg_locate">تحديد الموقع الآن</span>
+            </button>
+            <span id="edit-bureau-coords" class="coords-badge hidden"></span>
         </div>
         <div class="modal-actions">
             <button type="button" id="btn-save-bureau-edit" class="btn-primary" data-i18n="btn_save">حفظ</button>

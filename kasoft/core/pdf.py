@@ -282,17 +282,16 @@ def generate_pv_pdf(state, bureau_id, signer=None, request_host=None, return_met
     ])
 
     pdf._section("توزيع الأصوات حسب الحزب")
-    headers = ["الحزب", "الأصوات", "تفصيل المراقبين"]
+    from kasoft.core.lists import VOTE_LISTS
+
+    headers = ["الحزب"] + [label for _, label in VOTE_LISTS] + ["المجموع"]
     rows = []
     for p in state.get("partis", []):
+        bucket = state.get("votes", {}).get(bureau_id, {}).get(p["id"], {})
+        counts = [int(bucket.get(lid) or 0) for lid, _ in VOTE_LISTS]
         total = _bureau_votes(state, bureau_id).get(p["id"], 0)
-        details = []
-        for m in state.get("mourakibs", {}).get(p["id"], []):
-            c = state.get("votes", {}).get(bureau_id, {}).get(p["id"], {}).get(m["id"], 0)
-            if c:
-                details.append(f"{m['name']}: {c}")
-        rows.append([p["name"], total, "، ".join(details) or "—"])
-    pdf._table(headers, rows, [55, 25, 100])
+        rows.append([p["name"]] + counts + [total])
+    pdf._table(headers, rows, [70, 35, 35, 40])
 
     pdf._digital_signature_block(verify, signer=signer)
     pdf._section("التحقق والتوقيعات")
