@@ -1,14 +1,8 @@
 # Déploiement Render — connecter le repo GitHub puis « New Blueprint »
 # https://dashboard.render.com/blueprints
-databases:
-  # La région doit être identique à celle du service web : le nom d'hôte
-  # interne de la base n'est résolvable que dans la même région.
-  - name: kasoft-db
-    plan: free
-    region: frankfurt
-    databaseName: kasoft
-    user: kasoft
-
+# La base PostgreSQL est hébergée chez Neon (gratuite et permanente, contrairement
+# à la base gratuite de Render qui expire au bout de 30 jours). Son URL est saisie
+# à la main dans le tableau de bord Render, via la variable DATABASE_URL.
 services:
   - type: web
     name: nti5abat-elections
