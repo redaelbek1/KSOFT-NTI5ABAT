@@ -358,12 +358,13 @@ html:has(.phone-body) {
 
 /* ── Journal ── */
 .phone-journal-card {
+    /* Marge basse : le bouton flottant du محضر ne doit pas masquer la fin. */
+    margin-bottom: 4.5rem;
     background: #fff;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(24, 94, 165, 0.1);
     border: 1px solid #d4e2f0;
-    margin-bottom: 1rem;
     width: 100%;
     min-width: 0;
 }
@@ -378,43 +379,79 @@ html:has(.phone-body) {
     word-break: break-word;
 }
 
-.phone-journal-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-    padding: 0 0.5rem 0.75rem;
+.phone-journal-list {
+    padding: 0.5rem;
+    display: grid;
+    gap: 0.4rem;
 }
 
-.phone-journal-table {
-    width: 100%;
-    min-width: 540px;
-    border-collapse: collapse;
-    font-size: 0.74rem;
+/* Une opération = une carte (le tableau à 6 colonnes est illisible ici) */
+.phone-jrn {
+    border: 1px solid #e6eef7;
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    background: #fafcff;
 }
 
-.phone-journal-table th {
-    background: #e3f2fd;
-    padding: 0.45rem 0.4rem;
-    border: 1px solid #bbdefb;
-    white-space: nowrap;
+.phone-jrn-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.phone-journal-table td {
-    padding: 0.45rem 0.4rem;
-    border: 1px solid #eee;
+.phone-jrn-action {
+    flex: 0 0 auto;
+    min-width: 2.2rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
     text-align: center;
-    white-space: nowrap;
+    font-family: Inter, Arial, sans-serif;
+    direction: ltr;
 }
 
-.phone-journal-table td:nth-child(2),
-.phone-journal-table td:nth-child(3),
-.phone-journal-table td:nth-child(4) {
-    white-space: normal;
-    max-width: 88px;
-    word-break: break-word;
+.phone-jrn-plus { background: #e8f8ef; color: #2e7d32; }
+.phone-jrn-minus { background: #fce8ee; color: #c2185b; }
+
+.phone-jrn-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #1a365d;
 }
 
-.phone-journal-table tbody tr:nth-child(even) { background: #fafafa; }
+.phone-jrn-total {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #185ea5;
+}
+
+.phone-jrn-toggle {
+    margin-top: 0.15rem;
+    padding: 0.5rem;
+    background: #e8f2fa;
+    border: 1px solid #b9d6ee;
+    border-radius: 8px;
+    color: #185ea5;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.phone-jrn-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.72rem;
+    color: #5a6f85;
+}
 
 /* ── État vide ── */
 .phone-empty {

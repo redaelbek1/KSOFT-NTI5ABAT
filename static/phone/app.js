@@ -197,23 +197,46 @@ function renderGrid(leaderId) {
     });
 }
 
+// Le journal n'affiche que les dernières opérations : 50 cartes font une page
+// interminable sur téléphone. Le bouton « عرض المزيد » déplie le reste.
+const JOURNAL_PREVIEW = 10;
+let journalExpanded = false;
+
+/**
+ * Sur téléphone le journal est une liste de cartes : un tableau à six colonnes
+ * est illisible sur un écran étroit.
+ */
 function renderJournal() {
     const bureauId = currentBureauId();
-    const entries = KasoftStore.filterJournalForBureau(state, bureauId);
+    const all = KasoftStore.filterJournalForBureau(state, bureauId);
+    const entries = journalExpanded ? all : all.slice(0, JOURNAL_PREVIEW);
+    const hidden = all.length - entries.length;
+    const toggle = all.length > JOURNAL_PREVIEW
+        ? `<button type="button" class="phone-jrn-toggle" id="btn-journal-toggle">${
+            journalExpanded ? "عرض أقل" : `عرض المزيد (${hidden})`
+        }</button>`
+        : "";
     els.journal.innerHTML =
         entries
-            .map(
-                (j) => `
-        <tr>
-            <td class="num" lang="en-US" dir="ltr">${KasoftStore.formatTime(j.time)}</td>
-            <td>${j.actif}</td>
-            <td>${j.parti}</td>
-            <td>${j.mourakib}</td>
-            <td class="num" lang="en-US" dir="ltr">${j.action}</td>
-            <td class="num" lang="en-US" dir="ltr">${j.total}</td>
-        </tr>`
-            )
-            .join("") || `<tr><td colspan="6" class="phone-hint-inline">لا توجد عمليات بعد</td></tr>`;
+            .map((j) => {
+                const plus = j.action === "+1";
+                const cls = plus ? "phone-jrn-plus" : "phone-jrn-minus";
+                // Les entrées des compteurs (ملغاة، متنازع عليها) n'ont ni حزب ni لائحة.
+                const detail = [j.parti, j.mourakib].filter((v) => v && v !== "—").join(" — ");
+                return `
+        <article class="phone-jrn">
+            <div class="phone-jrn-head">
+                <span class="phone-jrn-action ${cls}">${j.action}</span>
+                <span class="phone-jrn-title">${detail || j.action}</span>
+                <span class="phone-jrn-total num" lang="en-US" dir="ltr">${j.total}</span>
+            </div>
+            <div class="phone-jrn-meta">
+                <span class="num" lang="en-US" dir="ltr">${KasoftStore.formatTime(j.time)}</span>
+                <span>${j.actif || "—"}</span>
+            </div>
+        </article>`;
+            })
+            .join("") + toggle || `<p class="phone-hint-inline">لا توجد عمليات بعد</p>`;
 }
 
 function renderBureauSelect() {
@@ -293,6 +316,12 @@ els.bureau.addEventListener("change", () => {
 });
 
 els.mourakibActif.addEventListener("change", persist);
+
+els.journal?.addEventListener("click", (e) => {
+    if (!e.target.closest("#btn-journal-toggle")) return;
+    journalExpanded = !journalExpanded;
+    renderJournal();
+});
 
 els.grid.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-vote]");

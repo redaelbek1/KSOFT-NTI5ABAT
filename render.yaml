@@ -23,7 +23,7 @@ services:
       - key: KASOFT_PHASE2
         value: "1"
       - key: ASSET_VERSION
-        value: "51"
+        value: "52"
       - key: FLASK_DEBUG
         value: "0"
       # Saisi à la main dans le tableau de bord : on utilise l'URL EXTERNE de
